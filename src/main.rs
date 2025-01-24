@@ -1,6 +1,7 @@
 
 // https://youtu.be/gcBJ7cPSALo?si=GcoX1i3tHK_UxPvK&t=1122
 // https://docs.rs/iced/latest/iced/index.html
+// https://redandgreen.co.uk/iced-rs-example-snippets-version-0-13/rust-programming/
 // Starting from Editor, then building Code Smell Detector
 //Taekil Oh
 // Start Date: Jan 23rd 2025
@@ -11,16 +12,17 @@
 // purpose is building Code Smell Detector to do....
 
 use iced::widget::{container, text_editor};
-use iced::{Theme, Element, Sandbox, Settings};
+use iced::{application, Element, Theme};
 
 mod analyzer;
 
-fn main() -> iced::Result{
+fn main() -> Result<(), iced::Error>{
 
     // call analyzer
     analyzer::test_analyzer();
-    // Editor::run method comes from the Sandbox trait. 
-    Editor::run(Settings::default())
+
+    application(Editor::title, Editor::update, Editor::view)
+    .run_with(|| (Editor::new(), iced::Task::none()))
 }
 
 struct Editor{
@@ -32,11 +34,11 @@ enum Message {
     Edit(text_editor::Action),
 } 
 
-impl Sandbox for Editor {
+impl Editor {
     /*
         Sandbox trait
      */
-    type Message = Message;
+    // type Message = Message;
 
     fn new() -> Self {
         Self{
@@ -66,9 +68,10 @@ impl Sandbox for Editor {
 
         container(input).padding(10).into()
     }
-
-    fn theme(&self) -> Theme {
-        Theme::Dark
-    }
-
+    /*
+        fn theme(&self) -> Theme {
+            Theme::Dark
+        }
+     */
+    
 }
