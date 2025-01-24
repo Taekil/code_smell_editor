@@ -11,8 +11,8 @@
 // main.rs
 // purpose is building Code Smell Detector to do....
 
-use iced::widget::{container, text_editor};
-use iced::{application, Element, Theme};
+use iced::widget::{button, column, container, text_editor, text};
+use iced::{application, Element};
 
 mod analyzer;
 
@@ -21,28 +21,27 @@ fn main() -> Result<(), iced::Error>{
     // call analyzer
     analyzer::test_analyzer();
 
+    // run application
     application(Editor::title, Editor::update, Editor::view)
     .run_with(|| (Editor::new(), iced::Task::none()))
 }
 
 struct Editor{
     content: text_editor::Content,
+    button_label: String,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     Edit(text_editor::Action),
+    ButtonPressed,
 } 
 
 impl Editor {
-    /*
-        Sandbox trait
-     */
-    // type Message = Message;
-
     fn new() -> Self {
         Self{
             content: text_editor::Content::with_text(include_str!("main.rs")),
+            button_label: String::from("Analyze Code")
         }
     }
 
@@ -55,6 +54,9 @@ impl Editor {
             Message::Edit(action) => {
                 self.content.perform(action);
             }
+            Message::ButtonPressed => {
+                self.button_label = String::from("Analysis Started") 
+            }
         }
     }
 
@@ -64,14 +66,22 @@ impl Editor {
             use iced::widget::text to display the message
             Wrap the text in an Element (a containder for UI Compoenents)
          */
-        let input = text_editor(&self.content).on_action(Message::Edit);
+        let input = text_editor(&self.content)
+        .on_action(Message::Edit);
 
-        container(input).padding(10).into()
+        let analyze_button = button(text(&self.button_label))
+        .on_press(Message::ButtonPressed)
+        .padding(10);
+
+        let layout = container(
+            column![
+                input,
+                analyze_button
+            ]
+            .spacing(10),
+        )
+        .padding(10);
+
+        layout.into()
     }
-    /*
-        fn theme(&self) -> Theme {
-            Theme::Dark
-        }
-     */
-    
 }
