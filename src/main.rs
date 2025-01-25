@@ -11,7 +11,7 @@
 // main.rs
 // purpose is building Code Smell Detector to do....
 
-use iced::widget::{button, column, row, container, text_editor, text};
+use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
 
 mod analyzer;
@@ -31,6 +31,7 @@ struct Editor{
     upload_button_label: String,
     analysis_button_label: String,
     save_button_label: String,
+    analysis_results: String, //Store results here
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +48,8 @@ impl Editor {
             content: text_editor::Content::with_text(include_str!("main.rs")),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
-            save_button_label: String::from("Save")
+            save_button_label: String::from("Save"),
+            analysis_results: String::from(""), // empty Initially
         }
     }
 
@@ -60,15 +62,22 @@ impl Editor {
             Message::Edit(action) => {
                 self.content.perform(action);
             }
+
             Message::UploadPressed => {
-                self.upload_button_label = String::from("uploaded")
+                self.upload_button_label = String::from("uploaded");
             }
 
             Message::AnalysisPressed => {
-                self.analysis_button_label = String::from("Started Analysis")
+                self.analysis_button_label = String::from("Started Analysis");
+
+                // call analyzer
+                let code_to_analyze = self.content.text();
+                let results = code_to_analyze;
+                self.analysis_results = results; // result already string(test case)
             }
+
             Message::SavePressed => {
-                self.save_button_label = String::from("Save Done")
+                self.save_button_label = String::from("Save Done");
             }
         }
     }
@@ -103,10 +112,18 @@ impl Editor {
         ]
         .spacing(10);
 
+        let results_scrollable = scrollable(
+            text(&self.analysis_results)
+                    .size(16)
+                    )
+                    .height(400.0)
+                    .width(1600.0);
+
         let layout = container(
             column![
                 input,
                 button_row,
+                results_scrollable,
             ]
             .spacing(10),
         )
