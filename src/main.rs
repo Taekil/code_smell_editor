@@ -16,7 +16,7 @@ use iced::{application, Element};
 
 mod analyzer;
 
-fn main() -> Result<(), iced::Error>{
+fn main() -> Result<(), iced::Error> {
 
     // call analyzer
     analyzer::test_analyzer();
@@ -41,7 +41,7 @@ impl Editor {
     fn new() -> Self {
         Self{
             content: text_editor::Content::with_text(include_str!("main.rs")),
-            button_label: String::from("Analyze Code")
+            button_label: String::from("Upload Code")
         }
     }
 
@@ -55,7 +55,7 @@ impl Editor {
                 self.content.perform(action);
             }
             Message::ButtonPressed => {
-                self.button_label = String::from("Analysis Started") 
+                self.button_label = String::from("Analysis Started")
             }
         }
     }
@@ -67,7 +67,9 @@ impl Editor {
             Wrap the text in an Element (a containder for UI Compoenents)
          */
         let input = text_editor(&self.content)
-        .on_action(Message::Edit);
+        .on_action(Message::Edit)
+        .height(400.0)
+        .width(800.0);
 
         let analyze_button = button(text(&self.button_label))
         .on_press(Message::ButtonPressed)
