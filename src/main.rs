@@ -11,7 +11,7 @@
 // main.rs
 // purpose is building Code Smell Detector to do....
 
-use iced::widget::{button, column, container, text_editor, text};
+use iced::widget::{button, column, row, container, text_editor, text};
 use iced::{application, Element};
 
 mod analyzer;
@@ -28,20 +28,23 @@ fn main() -> Result<(), iced::Error> {
 
 struct Editor{
     content: text_editor::Content,
-    button_label: String,
+    upload_button_label: String,
+    analysis_button_label: String,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     Edit(text_editor::Action),
-    ButtonPressed,
+    UploadPressed,
+    AnalysisPressed
 } 
 
 impl Editor {
     fn new() -> Self {
         Self{
             content: text_editor::Content::with_text(include_str!("main.rs")),
-            button_label: String::from("Upload Code")
+            upload_button_label: String::from("Upload Code"),
+            analysis_button_label: String::from("Analysis")
         }
     }
 
@@ -54,8 +57,12 @@ impl Editor {
             Message::Edit(action) => {
                 self.content.perform(action);
             }
-            Message::ButtonPressed => {
-                self.button_label = String::from("Analysis Started")
+            Message::UploadPressed => {
+                self.upload_button_label = String::from("uploaded")
+            }
+
+            Message::AnalysisPressed => {
+                self.analysis_button_label = String::from("Started Analysis")
             }
         }
     }
@@ -69,16 +76,26 @@ impl Editor {
         let input = text_editor(&self.content)
         .on_action(Message::Edit)
         .height(400.0)
-        .width(800.0);
+        .width(1600.0);
 
-        let analyze_button = button(text(&self.button_label))
-        .on_press(Message::ButtonPressed)
+        let upload_button = button(text(&self.upload_button_label))
+        .on_press(Message::UploadPressed)
         .padding(10);
+
+        let analysis_button = button(text(&self.analysis_button_label))
+        .on_press(Message::AnalysisPressed)
+        .padding(10);
+
+        let button_row = row![
+            upload_button,
+            analysis_button,
+        ]
+        .spacing(10);
 
         let layout = container(
             column![
                 input,
-                analyze_button
+                button_row,
             ]
             .spacing(10),
         )
