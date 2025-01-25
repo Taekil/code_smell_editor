@@ -30,13 +30,15 @@ struct Editor{
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
+    save_button_label: String,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     Edit(text_editor::Action),
     UploadPressed,
-    AnalysisPressed
+    AnalysisPressed,
+    SavePressed,
 } 
 
 impl Editor {
@@ -44,7 +46,8 @@ impl Editor {
         Self{
             content: text_editor::Content::with_text(include_str!("main.rs")),
             upload_button_label: String::from("Upload Code"),
-            analysis_button_label: String::from("Analysis")
+            analysis_button_label: String::from("Analysis"),
+            save_button_label: String::from("Save")
         }
     }
 
@@ -63,6 +66,9 @@ impl Editor {
 
             Message::AnalysisPressed => {
                 self.analysis_button_label = String::from("Started Analysis")
+            }
+            Message::SavePressed => {
+                self.save_button_label = String::from("Save Done")
             }
         }
     }
@@ -86,9 +92,14 @@ impl Editor {
         .on_press(Message::AnalysisPressed)
         .padding(10);
 
+        let save_button = button(text(&self.save_button_label))
+        .on_press(Message::SavePressed)
+        .padding(10);
+
         let button_row = row![
             upload_button,
             analysis_button,
+            save_button,
         ]
         .spacing(10);
 
