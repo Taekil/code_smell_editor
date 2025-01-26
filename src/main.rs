@@ -13,6 +13,7 @@
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
+use rfd::FileDialog;
 
 mod analyzer;
 
@@ -45,7 +46,7 @@ enum Message {
 impl Editor {
     fn new() -> Self {
         Self{
-            content: text_editor::Content::with_text(include_str!("main.rs")),
+            content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
             save_button_label: String::from("Save"),
@@ -64,7 +65,22 @@ impl Editor {
             }
 
             Message::UploadPressed => {
-                self.upload_button_label = String::from("uploaded");
+                if let Some(file) = FileDialog::new().pick_file() {
+                    let file_path = file.display().to_string();
+
+                    match std::fs::read_to_string(&file_path) {
+                        Ok(content) => {
+                            self.content = text_editor::Content::with_text(&content);
+                            self.upload_button_label = String::from("uploaded");
+                        }
+                        Err(_) => {
+                            self.upload_button_label = String::from("failed")
+                        }
+                    }
+                }
+                else {
+                    self.upload_button_label = String::from("No File")
+                }
             }
 
             Message::AnalysisPressed => {
