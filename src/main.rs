@@ -3,7 +3,7 @@
 // https://docs.rs/iced/latest/iced/index.html
 // https://redandgreen.co.uk/iced-rs-example-snippets-version-0-13/rust-programming/
 // Starting from Editor, then building Code Smell Detector
-//Taekil Oh
+// Taekil Oh
 // Start Date: Jan 23rd 2025
 // Update Date:
 // Due Date:
@@ -88,6 +88,7 @@ impl Editor {
 
                 // call analyzer
                 let code_to_analyze = self.content.text();
+                // make call analayzer(required to build the anlayzing algorithms...)
                 let results = code_to_analyze;
                 self.analysis_results = results; // result already string(test case)
             }
