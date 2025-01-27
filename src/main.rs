@@ -32,6 +32,7 @@ struct Editor{
     upload_button_label: String,
     analysis_button_label: String,
     save_button_label: String,
+    clear_button_label: String,
     analysis_results: String, //Store results here
 }
 
@@ -41,6 +42,7 @@ enum Message {
     UploadPressed,
     AnalysisPressed,
     SavePressed,
+    ClearPressed,
 } 
 
 impl Editor {
@@ -50,6 +52,7 @@ impl Editor {
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
             save_button_label: String::from("Save"),
+            clear_button_label: String::from("Clear"),
             analysis_results: String::from(""), // empty Initially
         }
     }
@@ -94,7 +97,36 @@ impl Editor {
             }
 
             Message::SavePressed => {
-                self.save_button_label = String::from("Save Done");
+
+                let combined_content = format!(
+                    "==== CODE ===\n{}\n\n==== ANALYSIS RESULTS ==== \n{}",
+                    self.content.text(),
+                    self.analysis_results,
+                );
+
+                if let Some(file) = FileDialog::new().save_file() {
+                    let file_path = file.display().to_string();
+                    match std::fs::write(&file_path, &combined_content) {
+                        Ok(_) => {
+                            self.analysis_results = String::from("File Saved Successfully!");
+                        }
+                        Err(err) => {
+                            self.analysis_results = format!("Save Failed: {}", err);
+                        }
+                    }
+                }
+                else {
+                    self.analysis_results = String::from("No file Selected for Saving");
+                }
+            }
+
+            Message::ClearPressed => {
+                // Reset all fields
+                self.content = text_editor::Content::default();
+                self.upload_button_label = String::from("Upload Code");
+                self.analysis_button_label = String::from("Analysis");
+                self.save_button_label = String::from("Save");
+                self.analysis_results = String::from("");
             }
         }
     }
@@ -122,12 +154,9 @@ impl Editor {
         .on_press(Message::SavePressed)
         .padding(10);
 
-        let button_row = row![
-            upload_button,
-            analysis_button,
-            save_button,
-        ]
-        .spacing(10);
+        let clear_button = button(text(&self.clear_button_label))
+        .on_press(Message::ClearPressed)
+        .padding(10);
 
         let results_scrollable = scrollable(
             text(&self.analysis_results)
@@ -135,7 +164,15 @@ impl Editor {
                     )
                     .height(400.0)
                     .width(1600.0);
-
+        
+        let button_row = row![
+            upload_button,
+            analysis_button,
+            save_button,
+            clear_button,
+        ]
+        .spacing(10);
+        
         let layout = container(
             column![
                 input,
