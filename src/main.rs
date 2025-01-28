@@ -23,11 +23,11 @@ fn main() -> Result<(), iced::Error> {
     analyzer::test_analyzer();
 
     // run application
-    application(Editor::title, Editor::update, Editor::view)
-    .run_with(|| (Editor::new(), iced::Task::none()))
+    application(CodeSmellDetector::title, CodeSmellDetector::update, CodeSmellDetector::view)
+    .run_with(|| (CodeSmellDetector::new(), iced::Task::none()))
 }
 
-struct Editor{
+struct CodeSmellDetector {
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
@@ -45,7 +45,7 @@ enum Message {
     ClearPressed,
 } 
 
-impl Editor {
+impl CodeSmellDetector {
     fn new() -> Self {
         Self{
             content: text_editor::Content::default(),
