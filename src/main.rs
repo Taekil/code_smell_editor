@@ -1,15 +1,11 @@
-
-// https://youtu.be/gcBJ7cPSALo?si=GcoX1i3tHK_UxPvK&t=1122
-// https://docs.rs/iced/latest/iced/index.html
-// https://redandgreen.co.uk/iced-rs-example-snippets-version-0-13/rust-programming/
-// Starting from Editor, then building Code Smell Detector
 // Taekil Oh
 // Start Date: Jan 23rd 2025
 // Update Date:
-// Due Date:
+// 1st due Date:
+// final due date:  
 // CSPC5260 WQ25 Version 0.0
 // main.rs
-// purpose is building Code Smell Detector to do....
+// Code Smell Detector, the purpose of main.rs 
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
