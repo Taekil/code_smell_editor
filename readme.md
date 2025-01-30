@@ -28,20 +28,12 @@
     |    |-- analyzer.rs
     |
     |-- cargo.toml
+    |-- readme.md
 
 ---
 **Instruction**
-1) rust installed
-2) version of rust
-3) ice framworks version in cargo.toml
-4) 
-
-but first of all, check the rust installed
-then, check the version of rust
-because of iced library 0.13.1 not working under lower version of rust. 
-How can I run
-at the terminal
-go to the program folder
-cargo build
-cargo run
+1. install rust
+    - recommended higher version 1.84.0 for iced.rs(version 0.13.1)
+2. cargo build
+3. cargo run
 ---

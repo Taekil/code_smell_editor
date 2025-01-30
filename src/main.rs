@@ -9,14 +9,13 @@
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
-use rfd::FileDialog;
 
-mod analyzer;
+mod codeAnalyzer;
+mod fileManager;
+
+use fileManager::FileManager;
 
 fn main() -> Result<(), iced::Error> {
-
-    // call analyzer
-    analyzer::test_analyzer();
 
     // run application
     application(CodeSmellDetector::title, CodeSmellDetector::update, CodeSmellDetector::view)
@@ -24,12 +23,14 @@ fn main() -> Result<(), iced::Error> {
 }
 
 struct CodeSmellDetector {
+    file_manager: FileManager,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
     save_button_label: String,
     clear_button_label: String,
     analysis_results: String, //Store results here
+    // analyzer should be called here first?
 }
 
 #[derive(Debug, Clone)]
@@ -44,6 +45,7 @@ enum Message {
 impl CodeSmellDetector {
     fn new() -> Self {
         Self{
+            file_manager: FileManager::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
@@ -64,22 +66,15 @@ impl CodeSmellDetector {
             }
 
             Message::UploadPressed => {
-                if let Some(file) = FileDialog::new().pick_file() {
-                    let file_path = file.display().to_string();
-
-                    match std::fs::read_to_string(&file_path) {
+                match self.file_manager.upload_file() {
                         Ok(content) => {
                             self.content = text_editor::Content::with_text(&content);
                             self.upload_button_label = String::from("uploaded");
                         }
                         Err(_) => {
-                            self.upload_button_label = String::from("failed")
+                            self.upload_button_label = String::from("failed");
                         }
                     }
-                }
-                else {
-                    self.upload_button_label = String::from("No File")
-                }
             }
 
             Message::AnalysisPressed => {
@@ -89,6 +84,7 @@ impl CodeSmellDetector {
                 let code_to_analyze = self.content.text();
                 // make call analayzer(required to build the anlayzing algorithms...)
                 let results = code_to_analyze;
+                // analyzer::test_analyzer();
                 self.analysis_results = results; // result already string(test case)
             }
 
@@ -100,20 +96,8 @@ impl CodeSmellDetector {
                     self.analysis_results,
                 );
 
-                if let Some(file) = FileDialog::new().save_file() {
-                    let file_path = file.display().to_string();
-                    match std::fs::write(&file_path, &combined_content) {
-                        Ok(_) => {
-                            self.analysis_results = String::from("File Saved Successfully!");
-                        }
-                        Err(err) => {
-                            self.analysis_results = format!("Save Failed: {}", err);
-                        }
-                    }
-                }
-                else {
-                    self.analysis_results = String::from("No file Selected for Saving");
-                }
+                let save_result = self.file_manager.save_file(&combined_content);
+                self.analysis_results = save_result;
             }
 
             Message::ClearPressed => {
@@ -182,3 +166,4 @@ impl CodeSmellDetector {
         layout.into()
     }
 }
+
