@@ -15,21 +15,25 @@ pub struct CodeAnalyzer {
 impl CodeAnalyzer {
 
     pub fn new() -> Self {
-        
         CodeAnalyzer {
             content: String::new(),
         }
     }
 
-    pub fn set_content(&mut self, text: &str) {
-        self.content = text.to_string();
+    pub fn set_tokened_content(&mut self, content: String) {
+        self.content = content;
     }
 
-    pub fn perfrom_line_count(&self) -> String {
-        let line_count = self.content.lines().count();
-        format!("{}", line_count)
+    pub fn get_content(&self) -> &str {
+        &self.content
     }
 
+    pub fn get_line_of_code() {
+
+    }
+
+    // get AST -> Analyzing
+    
 }
 
 // helper functions 
@@ -41,3 +45,5 @@ impl CodeAnalyzer {
 // long lines 
 
 // duplicated codes
+
+// Semantically Equicalent Code...

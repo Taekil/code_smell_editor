@@ -6,14 +6,26 @@
 // CSPC5260 WQ25 Version 0.0
 // main.rs
 // Code Smell Detector, the purpose of main.rs 
+/*
+ 1. main.rs (Entry Point)
+Calls fileManager.rs to read the source code.
+Calls tokenizer.rs to tokenize the code.
+Calls abstractSyntax.rs to build the AST.
+Calls CodeFlow.rs to generate the CFG.
+Passes CFG & AST to CodeAnalyzer.rs for detecting code smells.
+Displays results.
+ */
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
 
 mod codeAnalyzer;
 mod fileManager;
+mod tokenizer;
 
 use fileManager::FileManager;
+use tokenizer::Tokenizer;
+use codeAnalyzer::CodeAnalyzer;
 
 fn main() -> Result<(), iced::Error> {
 
@@ -24,6 +36,8 @@ fn main() -> Result<(), iced::Error> {
 
 struct CodeSmellDetector {
     file_manager: FileManager,
+    tokenizer: Tokenizer,
+    codeAnalizer: CodeAnalyzer,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
@@ -46,6 +60,8 @@ impl CodeSmellDetector {
     fn new() -> Self {
         Self{
             file_manager: FileManager::new(),
+            tokenizer: Tokenizer::new(),
+            codeAnalizer: CodeAnalyzer::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
@@ -75,17 +91,34 @@ impl CodeSmellDetector {
                             self.upload_button_label = String::from("failed");
                         }
                     }
+                
             }
 
             Message::AnalysisPressed => {
+
                 self.analysis_button_label = String::from("Started Analysis");
 
-                // call analyzer
                 let code_to_analyze = self.content.text();
                 // make call analayzer(required to build the anlayzing algorithms...)
-                let results = code_to_analyze;
+                
+                // Tokenize 
+                self.tokenizer.set_input(code_to_analyze.clone()); // using clone for ownership?
+                self.tokenizer.tokenize();
+                self.tokenizer.print_tokens(); // this is too check. 
+
+                // Token->CFG
+                // CFG just return and pass the graph to print. 
+                // codeFlowDrawer.rs (just draw)
+
+                // Token->AST
+
+                // AST->Analyzer
+
+                // AST-> Normalizer->Analyzer for semantic duplication analysis?
+                // after normailzer -> Drawer to compare primary passed and updated by normalizer?
+                // Normalizer can be called in Anlayzer directly, just return result at here. 
+
                 // analyzer::test_analyzer();
-                self.analysis_results = results; // result already string(test case)
             }
 
             Message::SavePressed => {
@@ -145,6 +178,8 @@ impl CodeSmellDetector {
                     .height(400.0)
                     .width(1600.0);
         
+        // adding the CFG space
+
         let button_row = row![
             upload_button,
             analysis_button,
@@ -152,12 +187,14 @@ impl CodeSmellDetector {
             clear_button,
         ]
         .spacing(10);
-        
+
+        // add result row
+
         let layout = container(
             column![
                 input,
                 button_row,
-                results_scrollable,
+                results_scrollable, // replace with result row
             ]
             .spacing(10),
         )
