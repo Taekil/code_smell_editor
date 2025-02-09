@@ -179,7 +179,7 @@ impl Tokenizer {
         let mut text = String::new();
 
         while let Some(ch) = self.peek_char() {
-            if ch.is_alphabetic() || ch == '_' {
+            if ch.is_alphanumeric() || ch == '_' {
                 text.push(ch);
                 self.next_char();
             } else {
@@ -276,4 +276,3 @@ impl Tokenizer {
         }
     }
 }
-

@@ -23,12 +23,12 @@ use iced::{application, Element};
 mod codeAnalyzer;
 mod fileManager;
 mod tokenizer;
-// mod astBuilder;
+mod astBuilder;
 
 use fileManager::FileManager;
 use tokenizer::Tokenizer;
 use codeAnalyzer::CodeAnalyzer;
-// use astBuilder::AST_Builder;
+use astBuilder::AST_Builder;
 
 fn main() -> Result<(), iced::Error> {
 
@@ -41,7 +41,7 @@ struct CodeSmellDetector {
     file_manager: FileManager,
     tokenizer: Tokenizer,
     codeAnalizer: CodeAnalyzer,
-    // astBuilder: AST_Builder,
+    astBuilder: AST_Builder,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
@@ -68,7 +68,7 @@ impl CodeSmellDetector {
             file_manager: FileManager::new(),
             tokenizer: Tokenizer::new(),
             codeAnalizer: CodeAnalyzer::new(),
-            // astBuilder: AST_Builder::new(),
+            astBuilder: AST_Builder::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
@@ -122,7 +122,11 @@ impl CodeSmellDetector {
                     println!("No LOC available");
                 }
 
-                // self.astBuilder.set_tokens(tokens);
+                self.astBuilder.set_tokens(tokens);
+
+                let ast = self.astBuilder.parse_file();
+
+                println!("AST: {:#?}", ast);
 
                 // AST->Analyzer
 
