@@ -10,10 +10,11 @@
  1. main.rs (Entry Point)
 Calls fileManager.rs to read the source code.
 Calls tokenizer.rs to tokenize the code.
-Calls abstractSyntax.rs to build the AST.
-Calls CodeFlow.rs to generate the CFG.
-Passes CFG & AST to CodeAnalyzer.rs for detecting code smells.
+Calls astBuilder.rs to build the AST.
+
 Displays results.
+
+FEB 8th 2025, thinking about the result formatter to make better result organization. 
  */
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
@@ -22,10 +23,12 @@ use iced::{application, Element};
 mod codeAnalyzer;
 mod fileManager;
 mod tokenizer;
+// mod astBuilder;
 
 use fileManager::FileManager;
 use tokenizer::Tokenizer;
 use codeAnalyzer::CodeAnalyzer;
+// use astBuilder::AST_Builder;
 
 fn main() -> Result<(), iced::Error> {
 
@@ -38,9 +41,11 @@ struct CodeSmellDetector {
     file_manager: FileManager,
     tokenizer: Tokenizer,
     codeAnalizer: CodeAnalyzer,
+    // astBuilder: AST_Builder,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
+    refactor_button_label:String,
     save_button_label: String,
     clear_button_label: String,
     analysis_results: String, //Store results here
@@ -52,6 +57,7 @@ enum Message {
     Edit(text_editor::Action),
     UploadPressed,
     AnalysisPressed,
+    RefactorPressed,
     SavePressed,
     ClearPressed,
 } 
@@ -62,9 +68,11 @@ impl CodeSmellDetector {
             file_manager: FileManager::new(),
             tokenizer: Tokenizer::new(),
             codeAnalizer: CodeAnalyzer::new(),
+            // astBuilder: AST_Builder::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
+            refactor_button_label: String::from("Dup Refactor"),
             save_button_label: String::from("Save"),
             clear_button_label: String::from("Clear"),
             analysis_results: String::from(""), // empty Initially
@@ -86,39 +94,54 @@ impl CodeSmellDetector {
                         Ok(content) => {
                             self.content = text_editor::Content::with_text(&content);
                             self.upload_button_label = String::from("uploaded");
+
+                            self.tokenizer.set_input(content.clone()); 
+                            println!("Tokenized Done in UploadPressed")
                         }
                         Err(_) => {
                             self.upload_button_label = String::from("failed");
                         }
-                    }
-                
+                }
+                println!("Code Uploaded");
             }
 
             Message::AnalysisPressed => {
 
                 self.analysis_button_label = String::from("Started Analysis");
-
-                let code_to_analyze = self.content.text();
-                // make call analayzer(required to build the anlayzing algorithms...)
-                
                 // Tokenize 
-                self.tokenizer.set_input(code_to_analyze.clone()); // using clone for ownership?
-                self.tokenizer.tokenize();
-                self.tokenizer.print_tokens(); // this is too check. 
+                // using clone for ownership?
+                let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
+                
+                self.tokenizer.print_tokens(); // this is too check.
+                
+                // get LOC by tokenizer
+                if let Some(LOC) = self.tokenizer.get_LOC() {
+                    self.analysis_results.push_str(&format!("LOC of updated Code is {}", LOC));
+                    println!("LOC: {}", LOC);
+                } else {
+                    println!("No LOC available");
+                }
 
-                // Token->CFG
-                // CFG just return and pass the graph to print. 
-                // codeFlowDrawer.rs (just draw)
-
-                // Token->AST
+                // self.astBuilder.set_tokens(tokens);
 
                 // AST->Analyzer
 
                 // AST-> Normalizer->Analyzer for semantic duplication analysis?
+                // and how to apply the jaccard metrics? for metrics-based duplication detection?
+                // but required -> limit for semantic dup? -> over 90% -> causes dup -> duplicated when refactoring. 
                 // after normailzer -> Drawer to compare primary passed and updated by normalizer?
                 // Normalizer can be called in Anlayzer directly, just return result at here. 
 
                 // analyzer::test_analyzer();
+            }
+
+            Message::RefactorPressed => {
+                self.refactor_button_label = String::from("Dup Refactored");
+
+                // adding the process refactoring
+                // update the content
+                // based on the analysis result
+                // target -> duplicated code refactoring
             }
 
             Message::SavePressed => {
@@ -138,6 +161,7 @@ impl CodeSmellDetector {
                 self.content = text_editor::Content::default();
                 self.upload_button_label = String::from("Upload Code");
                 self.analysis_button_label = String::from("Analysis");
+                self.refactor_button_label = String::from("Dup Refactor");
                 self.save_button_label = String::from("Save");
                 self.analysis_results = String::from("");
             }
@@ -163,6 +187,10 @@ impl CodeSmellDetector {
         .on_press(Message::AnalysisPressed)
         .padding(10);
 
+        let refactor_button = button(text(&self.refactor_button_label))
+        .on_press(Message::RefactorPressed)
+        .padding(10);
+
         let save_button = button(text(&self.save_button_label))
         .on_press(Message::SavePressed)
         .padding(10);
@@ -183,6 +211,7 @@ impl CodeSmellDetector {
         let button_row = row![
             upload_button,
             analysis_button,
+            refactor_button,
             save_button,
             clear_button,
         ]

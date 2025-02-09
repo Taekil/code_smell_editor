@@ -41,9 +41,20 @@ impl Tokenizer {
 
     pub fn set_input(&mut self, input: String) {
         self.input = input;
+        self.current_pos = 0;    // Reset the reading position
+        self.current_line = 1;   // Reset line counter
+        self.current_col = 1;    // Reset column counter
+        self.tokens.clear();
     }
 
     pub fn tokenize(&mut self) -> Vec<Token> {
+
+        println!("Tokenizing input: {}", self.input);
+
+        if self.input.trim().is_empty() {
+            println!("Tokenizer received empty input!");
+            return vec![]
+        }
 
         while let Some(ch) = self.peek_char() {
             let token = if ch.is_whitespace() {
@@ -79,6 +90,14 @@ impl Tokenizer {
             println!("{:?}", token);
         }
 
+    }
+
+    pub fn get_LOC(&self) -> Option<usize> {
+
+        if self.tokens.is_empty() {
+            return None;
+        }
+        self.tokens.last().map(|last_token| last_token.line)
     }
 
     fn peek_char(&self) -> Option<char> {
