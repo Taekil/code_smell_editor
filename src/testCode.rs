@@ -17,3 +17,8 @@ fn long_parameter_list_dummy_dup (a: u32, b: u32, c:u32, d: u32, e: u32) {
     let sum = a + b;
     println!("{}", sum);
 }
+
+fn long_parameter_list_dummy_dup_semantic (a: u32, b: u32, c:u32, d: u32, e: u32) {
+    let sum = a + c;
+    println!("{}", sum);
+}
