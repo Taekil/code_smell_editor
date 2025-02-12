@@ -80,7 +80,7 @@ impl AST_Builder {
         self.current_index = 0;
     }
 
-    pub fn parse_file(&mut self) -> Result<FileAst, String> {
+    pub fn parse_tokens(&mut self) -> Result<FileAst, String> {
         let mut functions = Vec::new();
         // Continue parsing while there are tokens left.
         while let Some(token) = self.peek_significant() {
