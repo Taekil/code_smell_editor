@@ -108,35 +108,32 @@ impl CodeSmellDetector {
             Message::AnalysisPressed => {
 
                 self.analysis_button_label = String::from("Started Analysis");
-                // Tokenize 
-                // using clone for ownership?
+                
                 let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
-                
-                self.tokenizer.print_tokens(); // this is too check.
-                
-                // get LOC by tokenizer
-                if let Some(LOC) = self.tokenizer.get_LOC() {
-                    self.analysis_results.push_str(&format!("LOC of updated Code is {}", LOC));
-                    println!("LOC: {}", LOC);
-                } else {
-                    println!("No LOC available");
-                }
+                // self.tokenizer.print_tokens();
 
-                self.astBuilder.set_tokens(tokens);
-
+                self.astBuilder.set_tokens(tokens.clone());
                 let ast = self.astBuilder.parse_tokens();
+                // println!("AST: {:#?}", ast);
+                
+                self.codeAnalizer.set_tokenized_content(tokens.clone());
 
-                println!("AST: {:#?}", ast);
+                match ast {
+                    Ok(ast) => {
+                        self.codeAnalizer.set_ast_content(ast);
+                    } Err(err_msg) => {
+                        eprintln!("Parsing Err:   {}", err_msg);
+                        return;
+                    }
+                };
 
-                // AST->Analyzer
-
+                self.analysis_results = self.codeAnalizer.get_analysis_result();
+                
                 // AST-> Normalizer->Analyzer for semantic duplication analysis?
                 // and how to apply the jaccard metrics? for metrics-based duplication detection?
                 // but required -> limit for semantic dup? -> over 90% -> causes dup -> duplicated when refactoring. 
                 // after normailzer -> Drawer to compare primary passed and updated by normalizer?
                 // Normalizer can be called in Anlayzer directly, just return result at here. 
-
-                // analyzer::test_analyzer();
             }
 
             Message::RefactorPressed => {
