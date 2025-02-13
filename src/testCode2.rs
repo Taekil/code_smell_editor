@@ -38,5 +38,3 @@ fn semantic_for_case () {
         println!("{}", element);
     }
 }
-
-
