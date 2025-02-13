@@ -113,7 +113,7 @@ impl CodeSmellDetector {
                 self.tokenizer.set_input(recent_code.clone());
                 
                 let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
-                // self.tokenizer.print_tokens();
+                self.tokenizer.print_tokens();
 
                 self.astBuilder.set_tokens(tokens.clone());
                 let ast = self.astBuilder.parse_tokens();
