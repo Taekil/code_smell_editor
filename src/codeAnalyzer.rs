@@ -9,7 +9,6 @@
 
 use crate::astBuilder::{ FileAst };
 use crate::tokenizer::{ Token, TokenType };
-use regex::Regex;
 
 pub struct CodeAnalyzer {
     // text container
@@ -68,7 +67,7 @@ impl CodeAnalyzer {
             .collect();
 
         // if statement when there is long method name?
-        
+
         self.analysis_result.push_str(&format!("the long method names are {:?}\n", long_names));
     }
 
