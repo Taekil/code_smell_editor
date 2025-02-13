@@ -95,7 +95,7 @@ impl CodeSmellDetector {
                             self.content = text_editor::Content::with_text(&content);
                             self.upload_button_label = String::from("uploaded");
 
-                            self.tokenizer.set_input(content.clone()); 
+                            // self.tokenizer.set_input(content.clone()); 
                             println!("Tokenized Done in UploadPressed")
                         }
                         Err(_) => {
@@ -108,6 +108,9 @@ impl CodeSmellDetector {
             Message::AnalysisPressed => {
 
                 self.analysis_button_label = String::from("Started Analysis");
+
+                let recent_code = self.content.text();
+                self.tokenizer.set_input(recent_code.clone());
                 
                 let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
                 // self.tokenizer.print_tokens();
