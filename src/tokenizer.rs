@@ -49,7 +49,7 @@ impl Tokenizer {
 
     pub fn tokenize(&mut self) -> Vec<Token> {
 
-        println!("Tokenizing input: {}", self.input);
+        //println!("Tokenizing input: {}", self.input);
 
         if self.input.trim().is_empty() {
             println!("Tokenizer received empty input!");
@@ -90,14 +90,6 @@ impl Tokenizer {
             println!("{:?}", token);
         }
 
-    }
-
-    pub fn get_LOC(&self) -> Option<usize> {
-
-        if self.tokens.is_empty() {
-            return None;
-        }
-        self.tokens.last().map(|last_token| last_token.line)
     }
 
     fn peek_char(&self) -> Option<char> {
