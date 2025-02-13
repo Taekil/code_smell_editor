@@ -26,6 +26,12 @@ pub struct Parameter {
     pub ty: String,
 }
 
+impl ToString for Parameter {
+    fn to_string(&self) -> String {
+        self.name.clone() // Or format however you want
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Block {
     pub stmts: Vec<Stmt>,
