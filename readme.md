@@ -1,92 +1,111 @@
+# **Code Smell Detector**  
 
-**Code Smell Detector**
----
-**Purpose of this readme.md**
-- this readme.md provides the information
-    - direction to running(?)
-    - frameworks
-    - additional tech(?)
----
-**Introduction**
-- Code Smell Detector design to find simple code smells,
-    - function1: long parameter
-    - function2: long lines
-    - function3: duplicated code
----
-**Library and frameworks**
-- the list of frameworks are listed in cargo.toml as Dependencies
-    - iced version 
-    - rfd version
-- optional figures should be commanted, do not forget it. 
----
-**File Structure**
-
-    project folder
-    |
-    |-- src
-    |    |-- main.rs
-    |    |-- CodeAnalyzer.rs
-    |    |-- CodeFlow.rs
-    |    |-- tokenizer.rs
-    |    |-- abstractSyntax.rs
-    |    |-- fileManager.rs 
-    |
-    |-- cargo.toml
-    |-- readme.md
-
-main -> CodeAnalyzer -> tokenizer: Create Token -> CodeFlow: Create CFG -> return CFG to CodeAnalyzer and do Analysis 
-                                                -> abstractSyntax: Create AST -> back to Code Analyzer and do Analysis for Code Structure
-
-
-Module Responsibilities & Code Smell Detection
-1. main.rs (Entry Point)
-
-Calls fileManager.rs to read the source code.
-Calls tokenizer.rs to tokenize the code.
-Calls abstractSyntax.rs to build the AST.
-Calls CodeFlow.rs to generate the CFG.
-Passes CFG & AST to CodeAnalyzer.rs for detecting code smells.
-Displays results.
-2. fileManager.rs (File Handling)
-
-Reads .rs source files from a directory.
-Provides an interface to retrieve code content as a string.
-3. tokenizer.rs (Lexical Analysis)
-
-Breaks the code into tokens.
-Helps identify long function names.
-Extracts function signatures for further analysis.
-4. abstractSyntax.rs (AST Generation & Structural Analysis)
-
-Builds the AST for code structure analysis.
-Detects:
-Long Function Names (checks function declaration nodes).
-Long Parameter List (counts parameters in function declarations).
-Duplicated Code (finds structurally similar AST subtrees).
-Semantic Duplicated Code (extra credit, compares AST for logic similarity).
-5. CodeFlow.rs (CFG Analysis for Flow-based Smells)
-
-Builds the CFG for control flow analysis.
-Detects dead code (e.g., unreachable functions, infinite loops).
-(For Extra Credit) Can help identify semantic duplicate code by comparing execution paths.
-6. CodeAnalyzer.rs (Main Code Smell Detector)
-
-Receives AST & CFG and performs code smell analysis:
-Long Function Names: Extract from AST and apply length threshold.
-Long Parameter Lists: Extract parameter count from AST.
-Duplicated Code: Compare AST subtrees to detect identical code blocks.
-Semantic Duplicated Code (Extra Credit):
-Compare AST patterns for functions with similar logic.
-Use CFG paths to find logically similar but differently structured functions.
-
----
-**Instruction**
-1. install rust
-    - recommended higher version 1.84.0 for iced.rs(version 0.13.1)
-2. cargo build
-3. cargo run
----
-**Future Improvement**
+## **Purpose of this README.md**  
+This `README.md` provides essential information about the **Code Smell Detector** project, including:  
+- Directions for running the project  
+- Libraries and frameworks used  
+- Additional technologies (if applicable)  
 
 ---
 
+## **Introduction**  
+The **Code Smell Detector** is a tool designed to identify common **code smells** in Rust programs. It analyzes source code for the following issues:  
+- **Long Parameter Lists**: Functions with too many parameters  
+- **Long Lines of Code**: Functions that exceed a reasonable length  
+- **Duplicated Code**: Identifies repeated code patterns and potential redundancy  
+
+---
+
+## **Libraries and Frameworks**  
+The dependencies used in this project are listed in **`Cargo.toml`**:  
+- **iced** (Version: `0.13.1`) → Used for UI rendering  
+- **rfd** → Used for file dialog operations  
+
+> *Optional features should be commented out if not in use.*  
+
+---
+
+## **File Structure**  
+
+```
+project folder
+|
+|-- src
+|    |-- main.rs
+|    |-- codeAnalyzer.rs
+|    |-- tokenizer.rs
+|    |-- astBuilder.rs
+|    |-- fileManager.rs 
+|
+|-- Cargo.toml
+|-- README.md
+```
+
+### **Module Responsibilities & Code Smell Detection**  
+
+#### **1. `main.rs` (Entry Point)**  
+- Calls `fileManager.rs` to read source code  
+- Calls `tokenizer.rs` to tokenize the code  
+- Calls `abstractSyntax.rs` to build the AST  
+- Passes **AST & Tokens** to `codeAnalyzer.rs` for detecting code smells  
+- Displays the results  
+
+#### **2. `fileManager.rs` (File Handling)**  
+- Reads `.rs` source files from a directory  
+- Provides an interface to retrieve code content as a string  
+
+#### **3. `tokenizer.rs` (Lexical Analysis)**  
+- Breaks the code into tokens  
+- Helps identify long function names  
+- Extracts function signatures for further analysis  
+
+#### **4. `astBuilder.rs` (AST Generation & Structural Analysis)**  
+- Builds the **Abstract Syntax Tree (AST)** for analyzing code structure  
+
+#### **5. `codeAnalyzer.rs` (Main Code Smell Detector)**  
+- Receives **AST & Tokens**
+- performs **code smell analysis**:  
+  - **Long Function Names**: Extract from AST and apply length threshold  
+  - **Long Parameter Lists**: Extract parameter count from AST  
+  - **Duplicated Code**: Compare Tokens to detect identical code blocks  
+  - **Semantic Duplicated Code (Extra Feature)**:  
+    - Compare AST patterns for functions with similar logic  
+---
+
+## **Instructions**  
+
+### **1. Install Rust**  
+- Recommended **Rust Version 1.84.0** *(for compatibility with `iced` v0.13.1)*  
+- Install Rust using **rustup**:  
+  ```sh
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+  Or update Rust:  
+  ```sh
+  rustup update
+  ```
+
+### **2. Build the Project**  
+```sh
+cargo build
+```
+
+### **3. Run the Project**  
+```sh
+cargo run
+```
+
+---
+
+## **Future Improvements**  
+- Improve **semantic duplication detection** using **AST comparisons**  
+- Implement **Jaccard similarity metrics** for better **metrics-based duplication analysis**  
+- Enhance **user interface** and result visualization with `iced`  
+- Add **support for additional programming languages**  
+
+---
+
+## **Updates**  
+- *To be updated with new features and improvements.*  
+
+---
