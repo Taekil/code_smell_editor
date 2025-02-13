@@ -37,8 +37,13 @@ impl CodeAnalyzer {
     }
 
     pub fn get_analysis_result(&mut self) -> String {
+
+        self.analysis_result.clear();
+        
         self.get_line_of_code();
         self.find_long_method_name();
+        self.find_long_parameter_list();
+        
         self.analysis_result.clone()
     }
 
@@ -52,7 +57,7 @@ impl CodeAnalyzer {
         .map(|last_token| last_token.line.to_string()) 
         .unwrap_or_else(|| "Unknown".to_string());
 
-        self.analysis_result.push_str(&format!("LOC of updated Code is {}\n", loc));
+        self.analysis_result.push_str(&format!(" - LOC of updated Code is {}\n\n", loc));
     }
 
     // get AST -> Analyzing
@@ -68,14 +73,19 @@ impl CodeAnalyzer {
 
         // if statement when there is long method name?
 
-        self.analysis_result.push_str(&format!("the long method names are {:?}\n", long_names));
+        self.analysis_result.push_str(&format!("- The long method names are {:?}\n\n", long_names));
     }
 
-    fn find_long_parameter_llist(&mut self) {
-        // ast is better
-        // find parameter list
-        // then return function name when over 3ea parameters
-
+    fn find_long_parameter_list(&mut self) {
+        let list_threshold = 3;
+    
+        let long_parameter_list: Vec<String> = self.ast_content.clone().unwrap().functions
+            .iter()
+            .filter(|f| f.params.len() > list_threshold)
+            .map(|f| format!("fn ({}): ({})", f.name, f.params.iter().map(|p| p.to_string()).collect::<Vec<String>>().join(", "))) // Include function name
+            .collect();
+    
+        self.analysis_result.push_str(&format!("- The functions with long parameter lists are {:?}\n\n", long_parameter_list));
     }
 
     fn find_semantic_duplicated (&mut self) {
