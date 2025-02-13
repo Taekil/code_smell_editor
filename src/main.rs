@@ -117,7 +117,7 @@ impl CodeSmellDetector {
 
                 self.astBuilder.set_tokens(tokens.clone());
                 let ast = self.astBuilder.parse_tokens();
-                // println!("AST: {:#?}", ast);
+                println!("AST: {:#?}", ast);
                 
                 self.codeAnalizer.set_tokenized_content(tokens.clone());
 
