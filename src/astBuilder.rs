@@ -8,30 +8,30 @@
 
 use crate::tokenizer::{Token, TokenType};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FileAst {
     pub functions: Vec<FunctionDef>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FunctionDef {
     pub name: String,
     pub params: Vec<Parameter>,
     pub body: Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Parameter {
     pub name: String,
     pub ty: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Block {
     pub stmts: Vec<Stmt>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Stmt {
     Let { name: String, expr: Expr },
     Expr(Expr),
@@ -46,7 +46,7 @@ pub enum Stmt {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Ident(String),
     StringLit(String),
