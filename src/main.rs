@@ -118,9 +118,10 @@ impl CodeSmellDetector {
                 let ast = self.astBuilder.parse_code(recent_code);
                 match ast {
                     Ok(ast) => {
+                        println!("ast built and pass to analyzer");
                         self.codeAnalizer.set_ast_content(ast);
                     } Err(err_msg) => {
-                        eprintln!("Parsing Err:   {}", err_msg);
+                        eprintln!("Parsing Err: {}", err_msg);
                         return;
                     }
                 };

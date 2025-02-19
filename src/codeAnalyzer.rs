@@ -47,10 +47,13 @@ impl CodeAnalyzer {
     pub fn get_analysis_result(&mut self) -> String {
 
         self.analysis_result.clear();
-        
+        self.analysis_result.push_str("** LOC **\n");
         self.get_line_of_code();
+        self.analysis_result.push_str("** Long Method Name **\n");
         self.find_long_method_name();
+        self.analysis_result.push_str("** Long parameter List **\n");
         self.find_long_parameter_list();
+        self.analysis_result.push_str("** Jaccard Metrics **\n");
         self.find_duplicated_by_jaccard();
         
         self.analysis_result.clone()
@@ -66,17 +69,47 @@ impl CodeAnalyzer {
         .map(|last_token| last_token.line.to_string()) 
         .unwrap_or_else(|| "Unknown".to_string());
 
-        self.analysis_result.push_str(&format!(" - LOC of updated Code is {}\n\n", loc));
+        self.analysis_result.push_str(&format!(" - LOC of updated Code is {}\n", loc));
     }
 
     fn find_long_method_name(&mut self) {
         // using ast
-
+        let threshold = 20;
+        if let Some(ref ast) = self.ast_content {
+            for item in &ast.items {
+                if let Item::Fn(func) = item {
+                    let name = func.sig.ident.to_string();
+                    if name.len() > threshold  {
+                        self.analysis_result.push_str(&format!(
+                            " - Function '{}' has a long name ({} characters)\n",
+                            name, name.len()
+                        ));
+                    }
+                }
+            }
+        }
     }
 
     fn find_long_parameter_list(&mut self) {
         // using ast
-        
+        let threshold = 3;
+        if let Some(ref ast) = self.ast_content {
+            for item in &ast.items {
+                if let Item::Fn(func) = item {
+                    let name = func.sig.ident.to_string();
+                    let param_count = func.sig.inputs.len();
+                    if param_count > threshold {
+                        self.analysis_result.push_str(&format!(
+                            " - Function '{}' has too many parameters ({} parameters)\n",
+                            name, param_count
+                        ));
+                    }
+                }
+                
+            }
+            
+
+        }
     }
 
     fn find_semantic_duplicated(&mut self) {
@@ -105,12 +138,7 @@ impl CodeAnalyzer {
 
                 if similarity >= threshold {
                     result_string.push_str(&format!(
-                        "Function {} and {} are duplicated with {:.2}% similarity\n", 
-                        i+1, j+1, percentage
-                    ));
-                } else {
-                    result_string.push_str(&format!(
-                        "Function {} and Function {} are not duplicated, similarity: {:.2}%\n", 
+                        " - Function {} and {} are duplicated with {:.2}% similarity\n", 
                         i+1, j+1, percentage
                     ));
                 }
