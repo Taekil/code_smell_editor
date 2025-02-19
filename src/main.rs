@@ -113,14 +113,9 @@ impl CodeSmellDetector {
                 self.tokenizer.set_input(recent_code.clone());
                 
                 let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
-                self.tokenizer.print_tokens();
-
-                self.astBuilder.set_tokens(tokens.clone());
-                let ast = self.astBuilder.parse_tokens();
-                println!("AST: {:#?}", ast);
-                
                 self.codeAnalizer.set_tokenized_content(tokens.clone());
 
+                let ast = self.astBuilder.parse_code(recent_code);
                 match ast {
                     Ok(ast) => {
                         self.codeAnalizer.set_ast_content(ast);
@@ -131,7 +126,6 @@ impl CodeSmellDetector {
                 };
 
                 self.analysis_results = self.codeAnalizer.get_analysis_result();
-                
                 // AST-> Normalizer->Analyzer for semantic duplication analysis?
                 // and how to apply the jaccard metrics? for metrics-based duplication detection?
                 // but required -> limit for semantic dup? -> over 90% -> causes dup -> duplicated when refactoring. 
