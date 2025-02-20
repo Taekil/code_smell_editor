@@ -105,20 +105,16 @@ impl CodeAnalyzer {
                         ));
                     }
                 }
-                
             }
-            
-
         }
     }
 
-    fn find_semantic_duplicated(&mut self) {
-        // compare ast for semantic
-        // compare the structures among functions
-        // then return the % 
-    }
-
     fn find_duplicated_by_jaccard (&mut self) {
+        /* 
+            I need to update this function with syn::ast
+            because for refactoring the code (delete the duplcated code)
+            detection by using syn::ast is better than using my code. 
+         */
 
         self.separate_functions();
 
