@@ -45,6 +45,7 @@ struct CodeSmellDetector {
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
+    semantic_button_label: String, 
     refactor_button_label:String,
     save_button_label: String,
     clear_button_label: String,
@@ -57,6 +58,7 @@ enum Message {
     Edit(text_editor::Action),
     UploadPressed,
     AnalysisPressed,
+    semanticPressed,
     RefactorPressed,
     SavePressed,
     ClearPressed,
@@ -72,6 +74,7 @@ impl CodeSmellDetector {
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
+            semantic_button_label: String::from("Semantic Analysis"),
             refactor_button_label: String::from("Dup Refactor"),
             save_button_label: String::from("Save"),
             clear_button_label: String::from("Clear"),
@@ -134,6 +137,10 @@ impl CodeSmellDetector {
                 // Normalizer can be called in Anlayzer directly, just return result at here. 
             }
 
+            Message::semanticPressed => {
+                // 
+            }
+
             Message::RefactorPressed => {
                 self.refactor_button_label = String::from("Dup Refactored");
 
@@ -186,6 +193,10 @@ impl CodeSmellDetector {
         .on_press(Message::AnalysisPressed)
         .padding(10);
 
+        let semantic_button = button(text(&self.semantic_button_label))
+        .on_press(Message::semanticPressed)
+        .padding(10);
+
         let refactor_button = button(text(&self.refactor_button_label))
         .on_press(Message::RefactorPressed)
         .padding(10);
@@ -205,18 +216,15 @@ impl CodeSmellDetector {
                     .height(400.0)
                     .width(1600.0);
         
-        // adding the CFG space
-
         let button_row = row![
             upload_button,
             analysis_button,
+            semantic_button,
             refactor_button,
             save_button,
             clear_button,
         ]
         .spacing(10);
-
-        // add result row
 
         let layout = container(
             column![
