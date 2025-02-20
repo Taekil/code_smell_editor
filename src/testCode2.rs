@@ -1,40 +1,30 @@
-fn main () {
-    let sentence = "Hello World!";
-    println!("{}", sentence);
-}
-
-fn this_is_really_long_function_name_test_dummy (a: u32, b: u32) {
-    let sum = a + b;
-    println!("{}", sum);
-}
-
-fn this_is_really_long_function_name_test_dummy (a: u32, b: u32) {
-    let sum = a + b;
-    println!("{}", sum);
-}
-
-fn long_parameter_list_dummy (a: u32, b: u32, c:u32, d: u32, e: u32) {
-    let sum = a + b + c + d + e;
-    println!("{}", sum);
-}
-
-fn long_parameter_list_dummy_dup_semantic (a: u32, b: u32) {
-    println!("{}", add(a, b));
-}
-
-fn semantic_while_case () {
-    let a = [1, 2, 3, 4];
-    let mut i = 0;
-    while i < a.len() {
-        println!("{}", a[i]);
-        i += 1;
+// Semantic Duplicate Example 1: Different Algorithms, Same Result
+// Function 1: Using a loop
+fn sum_of_numbers_loop(n: u32) -> u32 {
+    let mut sum = 0;
+    for i in 1..=n {
+        sum += i;
     }
+    sum
 }
 
-fn semantic_for_case () {
-    let a = [1, 2, 3, 4];
-    // Iterate over each element in the array
-    for element in a.iter() {
-        println!("{}", element);
+// Function 2: Using a mathematical formula (more efficient)
+fn sum_of_numbers_formula(n: u32) -> u32 {
+    (n * (n + 1)) / 2
+}
+
+// Semantic Duplicate Example 2: Different Data Structures, Same Operation
+// Function 1: Operating on a Vec
+fn find_element_vec(data: &Vec<i32>, target: i32) -> bool {
+    for &item in data {
+        if item == target {
+            return true;
+        }
     }
+    false
+}
+
+// Function 2: Operating on a HashSet
+fn find_element_hashset(data: &std::collections::HashSet<i32>, target: i32) -> bool {
+    data.contains(&target)
 }
