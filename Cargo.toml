@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 iced = { version = "0.13.1"} 
 rfd = { version = "0.15.2"}
+pyo3 = { version = "0.22", features = ["auto-initialize"] }
 syn = { version = "2.0", features = ["full"] }
 quote = "1.0" 
