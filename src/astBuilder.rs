@@ -6,7 +6,7 @@
 // parse - syntatic analysis - building ast then these result passing to analyzer(or normalizer)
 // and make report -> thing about the type to pass. 
 
-use syn::{parse_file, File, Item, ItemFn, FnArg, PatType, Pat, Type, ReturnType,};
+use syn::{parse_file,};
 
 pub struct AST_Builder {
 

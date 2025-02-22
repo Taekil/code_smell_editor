@@ -13,6 +13,7 @@ The **Code Smell Detector** is a tool designed to identify common **code smells*
 - **Long Parameter Lists**: Functions with too many parameters  
 - **Long Lines of Code**: Functions that exceed a reasonable length  
 - **Duplicated Code**: Identifies repeated code patterns and potential redundancy  
+- **Semantic Duplicated Code**: Indentifies while and for loop. 
 
 ---
 
@@ -20,6 +21,9 @@ The **Code Smell Detector** is a tool designed to identify common **code smells*
 The dependencies used in this project are listed in **`Cargo.toml`**:  
 - **iced** (Version: `0.13.1`) → Used for UI rendering  
 - **rfd** → Used for file dialog operations  
+- **pyo3**
+- **syn**
+- **quote**
 
 > *Optional features should be commented out if not in use.*  
 
@@ -36,9 +40,14 @@ project folder
 |    |-- tokenizer.rs
 |    |-- astBuilder.rs
 |    |-- fileManager.rs 
+|    |-- semanticDetector.rs 
 |
 |-- Cargo.toml
 |-- README.md
+|-- inference.py
+|-- semantic_duplicate_detector.pth
+|-- token_to_index.pxl
+
 ```
 
 ### **Module Responsibilities & Code Smell Detection**  
@@ -46,8 +55,9 @@ project folder
 #### **1. `main.rs` (Entry Point)**  
 - Calls `fileManager.rs` to read source code  
 - Calls `tokenizer.rs` to tokenize the code  
-- Calls `abstractSyntax.rs` to build the AST  
-- Passes **AST & Tokens** to `codeAnalyzer.rs` for detecting code smells  
+- Calls `astBuilder.rs` to build the AST  
+- Passes **AST & Tokens** to `codeAnalyzer.rs` for detecting code smells 
+- Passes **Code** to `semanticDetector.rs` for semantic duplicated code detection
 - Displays the results  
 
 #### **2. `fileManager.rs` (File Handling)**  
@@ -60,7 +70,7 @@ project folder
 - Extracts function signatures for further analysis  
 
 #### **4. `astBuilder.rs` (AST Generation & Structural Analysis)**  
-- Builds the **Abstract Syntax Tree (AST)** for analyzing code structure  
+- Builds the **Abstract Syntax Tree (AST)** for analyzing code structure
 
 #### **5. `codeAnalyzer.rs` (Main Code Smell Detector)**  
 - Receives **AST & Tokens**
@@ -68,8 +78,11 @@ project folder
   - **Long Function Names**: Extract from AST and apply length threshold  
   - **Long Parameter Lists**: Extract parameter count from AST  
   - **Duplicated Code**: Compare Tokens to detect identical code blocks  
+
+#### **6. `semanticDetector.rs` (Main Code Smell Detector)**
   - **Semantic Duplicated Code (Extra Feature)**:  
     - Compare AST patterns for functions with similar logic  
+
 ---
 
 ## **Instructions**  
@@ -98,9 +111,6 @@ cargo run
 ---
 
 ## **Future Improvements**  
-- Improve **semantic duplication detection** using **AST comparisons**  
-- Implement **Jaccard similarity metrics** for better **metrics-based duplication analysis**  
-- Enhance **user interface** and result visualization with `iced`  
 - Add **support for additional programming languages**  
 
 ---

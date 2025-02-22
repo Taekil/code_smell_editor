@@ -4,7 +4,6 @@ import torch.nn as nn
 import pickle
 import re
 
-
 class CodeEmbeddingRNN(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim):
         super().__init__()
@@ -16,10 +15,8 @@ class CodeEmbeddingRNN(nn.Module):
         _, hidden = self.rnn(embedded)
         return hidden[-1]
 
-
 def code_tokenizer(code_string):
     return re.findall(r'\w+|[+\-*/=(){};:]', code_string)
-
 
 # Load vocabulary and model
 with open("token_to_index.pkl", "rb") as f:
@@ -32,7 +29,6 @@ model = CodeEmbeddingRNN(vocab_size, embedding_dim, hidden_dim)
 model.load_state_dict(torch.load("semantic_duplicate_detector.pth"))
 model.eval()
 
-
 def get_embedding(code_snippet):
     """Generate embedding for a code snippet."""
     tokens = code_tokenizer(code_snippet)
@@ -40,7 +36,6 @@ def get_embedding(code_snippet):
     with torch.no_grad():
         embedding = model(indices.unsqueeze(0))
     return embedding.squeeze(0).tolist()  # Convert to list for Rust
-
 
 def compute_similarity(embedding1, embedding2):
     """Compute cosine similarity between two embeddings."""

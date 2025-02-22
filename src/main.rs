@@ -24,11 +24,13 @@ mod codeAnalyzer;
 mod fileManager;
 mod tokenizer;
 mod astBuilder;
+mod semanticDetector;
 
 use fileManager::FileManager;
 use tokenizer::Tokenizer;
 use codeAnalyzer::CodeAnalyzer;
 use astBuilder::AST_Builder;
+use semanticDetector::SemanticDetector;
 
 fn main() -> Result<(), iced::Error> {
 
@@ -42,6 +44,7 @@ struct CodeSmellDetector {
     tokenizer: Tokenizer,
     codeAnalizer: CodeAnalyzer,
     astBuilder: AST_Builder,
+    semanticDetector: SemanticDetector,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
@@ -71,13 +74,17 @@ impl CodeSmellDetector {
             tokenizer: Tokenizer::new(),
             codeAnalizer: CodeAnalyzer::new(),
             astBuilder: AST_Builder::new(),
+            semanticDetector: SemanticDetector::new(),
+
             content: text_editor::Content::default(),
+
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
             semantic_button_label: String::from("Semantic Analysis"),
             refactor_button_label: String::from("Dup Refactor"),
             save_button_label: String::from("Save"),
             clear_button_label: String::from("Clear"),
+            
             analysis_results: String::from(""), // empty Initially
         }
     }
@@ -138,7 +145,10 @@ impl CodeSmellDetector {
             }
 
             Message::semanticPressed => {
-                // 
+                self.analysis_results.clear();
+                let recent_code = self.content.text();
+                self.semanticDetector.detect_duplicates(&recent_code, 0.9);
+                // saving the results and update the analysis results
             }
 
             Message::RefactorPressed => {
