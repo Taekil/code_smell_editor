@@ -105,7 +105,7 @@ impl CodeSmellDetector {
                             self.content = text_editor::Content::with_text(&content);
                             self.upload_button_label = String::from("uploaded");
 
-                            // self.tokenizer.set_input(content.clone()); 
+                            // self.tokenizer.set_input(content.clone());
                             println!("Tokenized Done in UploadPressed")
                         }
                         Err(_) => {

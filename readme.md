@@ -13,7 +13,7 @@ The **Code Smell Detector** is a tool designed to identify common **code smells*
 - **Long Parameter Lists**: Functions with too many parameters  
 - **Long Lines of Code**: Functions that exceed a reasonable length  
 - **Duplicated Code**: Identifies repeated code patterns and potential redundancy  
-- **Semantic Duplicated Code**: Indentifies while and for loop. 
+- **Semantic Duplicated Code**: Identifies `while` and `for` loop. 
 
 ---
 
@@ -83,6 +83,13 @@ project folder
   - **Semantic Duplicated Code (Extra Feature)**:  
     - Compare AST patterns for functions with similar logic  
 
+#### **7. Additional Files**
+  - These files to use sementic detection by Machine Learning(ML)
+    - **inference.py**: allowing intergration of AI inference into Rust-based Code Smell Detector
+    - **semantic_detect_training_model.py**: the script to train ML model 
+    - **semantic_duplicate_detector.pth**: pre-trained weights
+    - **token_to_index.pkl**: pre-trained vocabulary
+
 ---
 
 ## **Instructions**  
@@ -106,6 +113,44 @@ cargo build
 ### **3. Run the Project**  
 ```sh
 cargo run
+```
+
+### **4. OPTIONAL**
+#### **Instructions for AI Model Training, Saving, and Inference**
+- Update Model with Additional Training
+    - Add new training and test data to the dataset.
+    - Load the existing model and continue training.
+    - Run semantic_`detect_training_model.py` again.
+    - Save the updated model in the project directory.
+      - `semantic_duplicate_detector.pth`
+      - `token_to_index.pkl`
+
+#### **Verify Python3**
+```sh
+python3 --version
+```
+
+#### **Install Python3**
+on mac
+```sh
+brew install python3
+```
+on window
+- Download the lastest python3 from `python.org`
+
+#### **Install NumPy**
+```sh
+pip3 install numpy
+```
+
+#### **Install PyTorch**
+```sh
+pip3 install torch
+```
+
+#### **Run the script**
+```sh
+python3 semantic_detect_training_model.py
 ```
 
 ---
