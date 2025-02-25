@@ -3,11 +3,19 @@ use pyo3::types::PyList;
 use syn::{parse_file, Item};
 use quote::quote;
 
-pub struct SemanticDetector {}
+pub struct SemanticDetector {
+    semantic_analysis_result: String,
+}
 
 impl SemanticDetector {
     pub fn new() -> Self {
-        SemanticDetector {}
+        SemanticDetector {
+            semantic_analysis_result: String::from(""),
+        }
+    }
+
+    pub fn get_result(&self) -> String {
+        self.semantic_analysis_result.clone()
     }
 
     pub fn detect_duplicates(&self, code: &str, threshold: f32) -> PyResult<()> {
