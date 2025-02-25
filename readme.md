@@ -21,9 +21,12 @@ The **Code Smell Detector** is a tool designed to identify common **code smells*
 The dependencies used in this project are listed in **`Cargo.toml`**:  
 - **iced** (Version: `0.13.1`) → Used for UI rendering  
 - **rfd** → Used for file dialog operations  
-- **pyo3**
-- **syn**
-- **quote**
+- **pyo3** → For binding Rust code with Python
+- **syn** → A Rust library for parsing Rust Code as an Abstact Syntax Tree(AST)
+- **quote** → Used `syn' to transform Rust AST into Valid Rust Code
+- **pytorch** → A Pytorch libarary used for deep learning and tensor operations  
+- **pickle** → Python module for serializing and deserializing objects
+- **re** → Used for pattern matching and text processing
 
 > *Optional features should be commented out if not in use.*  
 
