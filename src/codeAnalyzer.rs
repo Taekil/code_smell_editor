@@ -59,6 +59,15 @@ impl CodeAnalyzer {
         self.analysis_result.clone()
     }
 
+    pub fn refacored_by_jaccard_result(&mut self) -> String {
+        // based on jaccard
+        // delete duplicated thing
+        // then re-write the function from ast_contents
+        // if help function needed? add it. 
+        let refactored_code = Default::default();
+        refactored_code
+    }
+
     fn get_line_of_code(&mut self) {
         if self.tokenized_content.is_empty() {
             return;
@@ -142,7 +151,6 @@ impl CodeAnalyzer {
         }
 
         self.analysis_result.push_str(&result_string);
-
     }
     
     fn separate_functions(&mut self) {
