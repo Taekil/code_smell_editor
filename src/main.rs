@@ -147,17 +147,15 @@ impl CodeSmellDetector {
             Message::semanticPressed => {
                 self.analysis_results.clear();
                 let recent_code = self.content.text();
-                self.semanticDetector.detect_duplicates(&recent_code, 0.9);
-                // saving the results and update the analysis results
+                let _ = self.semanticDetector.detect_duplicates(&recent_code, 0.9);
+                println!("{}", self.semanticDetector.get_result());
             }
 
             Message::RefactorPressed => {
                 self.refactor_button_label = String::from("Dup Refactored");
-
-                // adding the process refactoring
-                // update the content
-                // based on the analysis result
-                // target -> duplicated code refactoring
+                let recent_code = self.codeAnalizer.refacored_by_jaccard_result();
+                self.content = text_editor::Content::with_text(&recent_code);
+                println!("Refactoring: Delete Duplicate function(s)")
             }
 
             Message::SavePressed => {
