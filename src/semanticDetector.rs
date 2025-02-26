@@ -20,7 +20,7 @@ impl SemanticDetector {
 
     pub fn detect_duplicates(&mut self, code: &str, threshold: f32) -> PyResult<()> {
         let mut result = String::new();
-        result.push_str(&format!("Starting analysis with code length: {}\n", code.len()));
+        result.push_str(&format!("** Starting analysis with character count: {} **\n", code.len()));
          
         // Check function extraction
         let functions = self.extract_functions(code);
@@ -32,18 +32,16 @@ impl SemanticDetector {
             return Ok(());
         }
 
-        // Debug print the functions found
-        for (i, func) in functions.iter().enumerate() {
-            result.push_str(&format!(
-                "Function {}: {}...\n", 
-                i, 
-                func.chars().take(50).collect::<String>()
-            ));
-        }
+        // for (i, func) in functions.iter().enumerate() {
+        //     result.push_str(&format!(
+        //         "Function {}: {}...\n", 
+        //         i, 
+        //         func.chars().take(50).collect::<String>()
+        //     ));
+        // }
 
         Python::with_gil(|py| -> PyResult<()> {
             result.push_str("Python GIL acquired\n");
-
 
             // Add project root to Python's sys.path
             let sys = py.import_bound("sys")?;
@@ -83,7 +81,7 @@ impl SemanticDetector {
                 }
             }
 
-            result.push_str("Starting similarity comparisons\n");
+            result.push_str("** Similarity Comparisons **\n");
             for i in 0..functions.len() {
                 for j in (i + 1)..functions.len() {
                     let similarity: f32 = compute_similarity
@@ -113,7 +111,7 @@ impl SemanticDetector {
             Ok(())
         })?;
         
-        result.push_str("Analysis completed\n");
+        result.push_str("- End -\n");
         self.semantic_analysis_result = result;
         Ok(())
 
