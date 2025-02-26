@@ -148,7 +148,7 @@ impl CodeSmellDetector {
                 self.analysis_results.clear();
                 let recent_code = self.content.text();
                 let _ = self.semanticDetector.detect_duplicates(&recent_code, 0.9);
-                println!("{}", self.semanticDetector.get_result());
+                self.analysis_results = self.semanticDetector.get_result();
             }
 
             Message::RefactorPressed => {
