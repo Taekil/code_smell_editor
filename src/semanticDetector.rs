@@ -18,25 +18,32 @@ impl SemanticDetector {
         self.semantic_analysis_result.clone()
     }
 
-    pub fn detect_duplicates(&self, code: &str, threshold: f32) -> PyResult<()> {
-        println!("Starting analysis with code length: {}", code.len());
-        
+    pub fn detect_duplicates(&mut self, code: &str, threshold: f32) -> PyResult<()> {
+        let mut result = String::new();
+        result.push_str(&format!("Starting analysis with code length: {}\n", code.len()));
+         
         // Check function extraction
         let functions = self.extract_functions(code);
-        println!("Found {} functions", functions.len());
+        result.push_str(&format!("Found {} functions\n", functions.len()));
         
         if functions.len() < 2 {
-            println!("Not enough functions to compare");
+            println!("Not enough functions to compare\n");
+            self.semantic_analysis_result = result;
             return Ok(());
         }
 
         // Debug print the functions found
         for (i, func) in functions.iter().enumerate() {
-            println!("Function {}: {}...", i, func.chars().take(50).collect::<String>());
+            result.push_str(&format!(
+                "Function {}: {}...\n", 
+                i, 
+                func.chars().take(50).collect::<String>()
+            ));
         }
 
         Python::with_gil(|py| -> PyResult<()> {
-            println!("Python GIL acquired");
+            result.push_str("Python GIL acquired\n");
+
 
             // Add project root to Python's sys.path
             let sys = py.import_bound("sys")?;
@@ -46,11 +53,11 @@ impl SemanticDetector {
 
             let inference = match PyModule::import_bound(py, "inference") {
                 Ok(module) => {
-                    println!("Successfully imported inference module");
+                    result.push_str("Successfully imported inference module\n");
                     module
                 },
                 Err(e) => {
-                    println!("Failed to import inference: {}", e);
+                    result.push_str(&format!("Failed to import inference: {}\n", e));
                     return Err(e);
                 }
             };
@@ -62,36 +69,54 @@ impl SemanticDetector {
             // Generate embeddings
             for (i, func) in functions.iter().enumerate() {
                 match get_embedding.call1((func,)) {
-                    Ok(result) => {
-                        let embedding: Vec<f32> = result.extract()?;
-                        println!("Generated embedding {} with length {}", i, embedding.len());
+                    Ok(result_embedding) => {
+                        let embedding: Vec<f32> = result_embedding.extract()?;
+                        result.push_str(&format!(
+                            "Generated embedding {} with length {}\n",
+                            i,
+                            embedding.len()
+                        ));
+
                         embeddings.push(embedding);
                     },
-                    Err(e) => println!("Embedding error for function {}: {}", i, e),
+                    Err(e) => result.push_str(&format!("Embedding error for function {}: {}\n", i, e)),
                 }
             }
 
-            // Compare embeddings
-            println!("Starting similarity comparisons");
+            result.push_str("Starting similarity comparisons\n");
             for i in 0..functions.len() {
                 for j in (i + 1)..functions.len() {
                     let similarity: f32 = compute_similarity
                         .call1((embeddings[i].clone(), embeddings[j].clone()))?
                         .extract()?;
-                    println!("Similarity between {} and {}: {}", i, j, similarity);
+                    result.push_str(&format!("Similarity between {} and {}: {}\n", i, j, similarity));
                     
                     if similarity >= threshold {
-                        println!("Potential duplicate detected (Similarity: {:.3}):", similarity);
-                        println!("Function {}: {}...", i + 1, functions[i].chars().take(50).collect::<String>());
-                        println!("Function {}: {}...", j + 1, functions[j].chars().take(50).collect::<String>());
-                        println!();
+                        result.push_str(&format!(
+                            "Potential duplicate detected (Similarity: {:.3}):\n", 
+                            similarity
+                        ));
+                        result.push_str(&format!(
+                            "Function {}: {}...\n", 
+                            i + 1, 
+                            functions[i].chars().take(50).collect::<String>()
+                        ));
+                        result.push_str(&format!(
+                            "Function {}: {}...\n", 
+                            j + 1, 
+                            functions[j].chars().take(50).collect::<String>()
+                        ));
+                        result.push_str("\n");
                     }
                 }
             }
             Ok(())
         })?;
-        println!("Analysis completed");
+        
+        result.push_str("Analysis completed\n");
+        self.semantic_analysis_result = result;
         Ok(())
+
     }
 
     fn extract_functions(&self, code: &str) -> Vec<String> {
