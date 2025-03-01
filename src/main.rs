@@ -22,14 +22,10 @@ use iced::{application, Element};
 
 mod codeAnalyzer;
 mod fileManager;
-mod tokenizer;
-mod astBuilder;
 mod semanticDetector;
 
 use fileManager::FileManager;
-use tokenizer::Tokenizer;
 use codeAnalyzer::CodeAnalyzer;
-use astBuilder::AST_Builder;
 use semanticDetector::SemanticDetector;
 
 fn main() -> Result<(), iced::Error> {
@@ -41,9 +37,7 @@ fn main() -> Result<(), iced::Error> {
 
 struct CodeSmellDetector {
     file_manager: FileManager,
-    tokenizer: Tokenizer,
     codeAnalizer: CodeAnalyzer,
-    astBuilder: AST_Builder,
     semanticDetector: SemanticDetector,
     content: text_editor::Content,
     upload_button_label: String,
@@ -71,13 +65,9 @@ impl CodeSmellDetector {
     fn new() -> Self {
         Self{
             file_manager: FileManager::new(),
-            tokenizer: Tokenizer::new(),
             codeAnalizer: CodeAnalyzer::new(),
-            astBuilder: AST_Builder::new(),
             semanticDetector: SemanticDetector::new(),
-
             content: text_editor::Content::default(),
-
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
             semantic_button_label: String::from("Semantic Analysis"),
@@ -120,22 +110,7 @@ impl CodeSmellDetector {
                 self.analysis_button_label = String::from("Started Analysis");
 
                 let recent_code = self.content.text();
-                self.tokenizer.set_input(recent_code.clone());
-                
-                let tokens: Vec<tokenizer::Token> = self.tokenizer.tokenize();
-                self.codeAnalizer.set_tokenized_content(tokens.clone());
-
-                let ast = self.astBuilder.parse_code(recent_code);
-                match ast {
-                    Ok(ast) => {
-                        println!("ast built and pass to analyzer");
-                        self.codeAnalizer.set_ast_content(ast);
-                    } Err(err_msg) => {
-                        eprintln!("Parsing Err: {}", err_msg);
-                        return;
-                    }
-                };
-
+                self.codeAnalizer.set_ast_content(recent_code);
                 self.analysis_results = self.codeAnalizer.get_analysis_result();
                 // AST-> Normalizer->Analyzer for semantic duplication analysis?
                 // and how to apply the jaccard metrics? for metrics-based duplication detection?
@@ -153,7 +128,7 @@ impl CodeSmellDetector {
 
             Message::RefactorPressed => {
                 self.refactor_button_label = String::from("Dup Refactored");
-                let recent_code = self.codeAnalizer.refacored_by_jaccard_result();
+                let recent_code = self.codeAnalizer.refactored_by_jaccard_result();
                 self.content = text_editor::Content::with_text(&recent_code);
                 println!("Refactoring: Delete Duplicate function(s)")
             }

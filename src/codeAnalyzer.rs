@@ -7,88 +7,134 @@
 // analyzer.rs
 // purpose
 
-use syn::{parse_file, File, Item, ItemFn, FnArg, PatType, Pat, Type, ReturnType,};
-use crate::tokenizer::{ Token, TokenType };
+use syn::{parse_file, File, Item, ItemFn};
+use syn::spanned::Spanned;
+use std::collections::HashSet;
+use quote::ToTokens;
 
-#[derive(Debug, Clone)]
-pub struct Splittedfunction {
+#[derive(Clone)] 
+pub struct FunctionInfo {
     pub name: String,
-    pub tokens: Vec<Token>,
+    #[cfg_attr(feature = "debug", derive(Debug))] 
+    pub ast: ItemFn,
 }
 
 pub struct CodeAnalyzer {
-    // text container
-    ast_content: Option<syn::File>, // should be changed with new astBuilder
-    tokenized_content: Vec<Token>,
-    splitted_functions: Vec<Splittedfunction>,
+    ast_content: Option<syn::File>,
     analysis_result: String,
 }
 
 impl CodeAnalyzer {
-
     pub fn new() -> Self {
-
         CodeAnalyzer {
             ast_content: None,
-            tokenized_content: Vec::new(),
-            splitted_functions: Vec::new(),
             analysis_result: String::from(""),
         }
     }
 
-    pub fn set_ast_content(&mut self, content: syn::File) {
-        self.ast_content = Some(content);
-    }
-
-    pub fn set_tokenized_content(&mut self, content: Vec<Token>) {
-        self.tokenized_content = content;
+    pub fn set_ast_content(&mut self, source: String) -> Result<(), syn::Error>{
+        self.ast_content = Some(parse_file(&source)?);
+        Ok(())
     }
 
     pub fn get_analysis_result(&mut self) -> String {
-
         self.analysis_result.clear();
         self.analysis_result.push_str("** LOC **\n");
         self.get_line_of_code();
         self.analysis_result.push_str("** Long Method Name **\n");
         self.find_long_method_name();
-        self.analysis_result.push_str("** Long parameter List **\n");
+        self.analysis_result.push_str("** Long Parameter List **\n");
         self.find_long_parameter_list();
         self.analysis_result.push_str("** Jaccard Metrics **\n");
         self.find_duplicated_by_jaccard();
-        
+
         self.analysis_result.clone()
     }
 
-    pub fn refacored_by_jaccard_result(&mut self) -> String {
-        // based on jaccard
-        // delete duplicated thing
-        // then re-write the function from ast_contents
-        // if help function needed? add it. 
-        let refactored_code = Default::default();
-        refactored_code
+    pub fn refactored_by_jaccard_result(&mut self) -> String {
+        if let Some(ast) = &self.ast_content {
+            let functions = self.collect_functions(ast);
+            let mut unique_functions: Vec<ItemFn> = Vec::new();
+            let mut seen: HashSet<String> = HashSet::new();
+            let threshold = 0.9;
+
+            for i in 0..functions.len() {
+                let mut is_duplicate = false;
+                for j in 0..i {
+                    let similarity = self.jaccard_similarity(&functions[i].ast, &functions[j].ast);
+                    if similarity >= threshold {
+                        is_duplicate = true;
+                        break;
+                    }
+                }
+                if !is_duplicate {
+                    let name = functions[i].name.clone();
+                    unique_functions.push(functions[i].ast.clone());
+                    seen.insert(name);
+                }
+            }
+
+            let mut new_ast = ast.clone();
+            new_ast.items = unique_functions.into_iter().map(Item::Fn).collect();
+
+            self.format_ast_to_string(&new_ast)
+        } else {
+            "// No AST content available for refactoring".to_string()
+        }
     }
 
     fn get_line_of_code(&mut self) {
-        if self.tokenized_content.is_empty() {
-            return;
+        if let Some(ast) = &self.ast_content {
+            if ast.items.is_empty() {
+                self.analysis_result.push_str(" - LOC of updated Code is 0\n");
+                return;
+            }
+
+            let (mut min_line, mut max_line) = (usize::MAX, 0);
+
+            for item in &ast.items {
+                let span = match item {
+                    Item::Fn(func) => {
+                        // Use the block's span
+                        func.block.span()
+                    }
+                    _ => {
+                        // Or the entire item's span if not a function
+                        item.span()
+                    }
+                };
+
+                let start_line = span.start().line;
+                let end_line   = span.end().line;
+
+                if start_line < min_line {
+                    min_line = start_line;
+                }
+                if end_line > max_line {
+                    max_line = end_line;
+                }
+            }
+
+            let loc = if min_line == usize::MAX {
+                0
+            } else {
+                max_line.saturating_sub(min_line) + 1
+            };
+
+            self.analysis_result
+                .push_str(&format!(" - LOC of updated Code is {}\n", loc));
+        } else {
+            self.analysis_result.push_str(" - No AST content available\n");
         }
-
-        let loc = self.tokenized_content
-        .last()
-        .map(|last_token| last_token.line.to_string()) 
-        .unwrap_or_else(|| "Unknown".to_string());
-
-        self.analysis_result.push_str(&format!(" - LOC of updated Code is {}\n", loc));
     }
 
     fn find_long_method_name(&mut self) {
-        // using ast
-        let threshold = 20;
-        if let Some(ref ast) = self.ast_content {
+        const THRESHOLD: usize = 20;
+        if let Some(ast) = &self.ast_content {
             for item in &ast.items {
                 if let Item::Fn(func) = item {
                     let name = func.sig.ident.to_string();
-                    if name.len() > threshold  {
+                    if name.len() > THRESHOLD {
                         self.analysis_result.push_str(&format!(
                             " - Function '{}' has a long name ({} characters)\n",
                             name, name.len()
@@ -100,14 +146,13 @@ impl CodeAnalyzer {
     }
 
     fn find_long_parameter_list(&mut self) {
-        // using ast
-        let threshold = 3;
-        if let Some(ref ast) = self.ast_content {
+        const THRESHOLD: usize = 3;
+        if let Some(ast) = &self.ast_content {
             for item in &ast.items {
                 if let Item::Fn(func) = item {
                     let name = func.sig.ident.to_string();
                     let param_count = func.sig.inputs.len();
-                    if param_count > threshold {
+                    if param_count > THRESHOLD {
                         self.analysis_result.push_str(&format!(
                             " - Function '{}' has too many parameters ({} parameters)\n",
                             name, param_count
@@ -118,122 +163,75 @@ impl CodeAnalyzer {
         }
     }
 
-    fn find_duplicated_by_jaccard (&mut self) {
-        /* 
-            I need to update this function with syn::ast
-            because for refactoring the code (delete the duplcated code)
-            detection by using syn::ast is better than using my code. 
-         */
-
-        self.separate_functions();
-
-        if self.splitted_functions.len() < 2 {
-            self.analysis_result.push_str("Not Enough Functions to Compare")
-        }
-
-        let mut result_string = String::new();
-        let threshold = 0.9;
-
-        for i in 0..self.splitted_functions.len() {
-            for j in i + 1..self.splitted_functions.len() {
-                let fn1 = &self.splitted_functions[i];
-                let fn2 = &self.splitted_functions[j];
-                let similarity: f64 = self.jaccard_similarity(fn1, fn2);
-                let percentage = similarity * 100.0;
-
-                if similarity >= threshold {
-                    result_string.push_str(&format!(
-                        " - Function {} and {} are duplicated with {:.2}% similarity\n", 
-                        i+1, j+1, percentage
-                    ));
-                }
-            }
-        }
-
-        self.analysis_result.push_str(&result_string);
-    }
-    
-    fn separate_functions(&mut self) {
-        self.splitted_functions.clear();
-
-        let mut current_function_tokens: Vec<Token> = Vec::new();
-        let mut current_function_name = String::from("unknown");
-        let mut in_function = false;
-
-        for token in &self.tokenized_content {
-            // When we see a "fn" keyword, we treat it as the start of a new function.
-            if let TokenType::Keyword(ref kw) = token.token_type {
-                if kw == "fn" {
-                    // If we were already collecting tokens for a function,
-                    // push the current function into splitted_functions.
-                    if in_function && !current_function_tokens.is_empty() {
-                        self.splitted_functions.push(Splittedfunction {
-                            name: current_function_name.clone(),
-                            tokens: current_function_tokens.iter().map(|t| Token {
-                                token_type: t.token_type.clone(),
-                                line: 0,
-                                column: 0,
-                            }).collect(),
-                        });
-                        // Reset for the next function.
-                        current_function_tokens.clear();
-                        current_function_name = String::from("unknown");
-                    }
-                    in_function = true;
-                }
+    fn find_duplicated_by_jaccard(&mut self) {
+        if let Some(ast) = &self.ast_content {
+            let functions = self.collect_functions(ast);
+            if functions.len() < 2 {
+                self.analysis_result.push_str(" - Not enough functions to compare\n");
+                return;
             }
 
-            // If we are in a function, accumulate the token.
-            if in_function {
-                current_function_tokens.push(token.clone());
-
-                // Heuristically set the function name:
-                // The first non-whitespace identifier following the "fn" keyword
-                // is assumed to be the function name.
-                if current_function_name == "unknown" {
-                    if let TokenType::Identifier(ref id) = token.token_type {
-                        // A quick check: ensure the previous token was "fn"
-                        // (i.e. the identifier comes immediately after "fn" or after some whitespace)
-                        if current_function_tokens.len() >= 2 {
-                            let prev_token = &current_function_tokens[current_function_tokens.len() - 2];
-                            if let TokenType::Keyword(ref prev_kw) = prev_token.token_type {
-                                if prev_kw == "fn" {
-                                    current_function_name = id.clone();
-                                }
-                            }
-                        }
+            let threshold = 0.9;
+            for i in 0..functions.len() {
+                for j in i + 1..functions.len() {
+                    let fn1 = &functions[i];
+                    let fn2 = &functions[j];
+                    let similarity = self.jaccard_similarity(&fn1.ast, &fn2.ast);
+                    let percentage = similarity * 100.0;
+                    if similarity >= threshold {
+                        self.analysis_result.push_str(&format!(
+                            " - Function '{}' and '{}' are duplicated with {:.2}% similarity\n",
+                            fn1.name, fn2.name, percentage
+                        ));
                     }
                 }
             }
         }
-
-        // After looping through all tokens, if we were in a function, save the last one.
-        if in_function && !current_function_tokens.is_empty() {
-            self.splitted_functions.push(Splittedfunction {
-                name: current_function_name,
-                tokens: current_function_tokens.iter().map(|t| Token {
-                    token_type: t.token_type.clone(),
-                    line: 0,
-                    column: 0,
-                }).collect(),
-            });
-        }
     }
-    
-    fn jaccard_similarity (&self, fn1: &Splittedfunction, fn2: &Splittedfunction) -> f64 {
-        use std::collections::HashSet;
 
-        let set1: HashSet<String> = fn1
-        .tokens
-        .iter()
-        .filter_map(|t| self.token_as_string(t))
-        .collect();
+    fn collect_functions(&self, ast: &syn::File) -> Vec<FunctionInfo> {
+        let mut functions = Vec::new();
+        for item in &ast.items {
+            if let Item::Fn(func) = item {
+                functions.push(FunctionInfo {
+                    name: func.sig.ident.to_string(),
+                    ast: func.clone(),
+                });
+            }
+        }
+        functions
+    }
 
-        let set2: HashSet<String> = fn2
-        .tokens
-        .iter()
-        .filter_map(|t| self.token_as_string(t))
-        .collect();
+    fn jaccard_similarity(&self, fn1: &ItemFn, fn2: &ItemFn) -> f64 {
+        use quote::ToTokens;
+
+        let tokens1: Vec<String> = fn1
+            .block
+            .stmts
+            .iter()
+            .flat_map(|stmt| {
+                stmt.to_token_stream()
+                    .to_string()
+                    .split_whitespace()
+                    .map(String::from)
+                    .collect::<Vec<_>>() // Collect into Vec to own the data
+            })
+            .collect();
+        let tokens2: Vec<String> = fn2
+            .block
+            .stmts
+            .iter()
+            .flat_map(|stmt| {
+                stmt.to_token_stream()
+                    .to_string()
+                    .split_whitespace()
+                    .map(String::from)
+                    .collect::<Vec<_>>() // Collect into Vec to own the data
+            })
+            .collect();
+
+        let set1: HashSet<String> = tokens1.into_iter().collect();
+        let set2: HashSet<String> = tokens2.into_iter().collect();
 
         let intersection = set1.intersection(&set2).count() as f64;
         let union = set1.union(&set2).count() as f64;
@@ -245,16 +243,13 @@ impl CodeAnalyzer {
         }
     }
 
-    fn token_as_string(&self, token: &Token) -> Option<String> {
-        match &token.token_type {
-            TokenType::Keyword(kw) => Some(kw.clone()),
-            TokenType::Identifier(id) => Some(id.clone()),  // You may replace this with "<ID>" if needed
-            TokenType::Number(num) => Some(num.clone()),
-            TokenType::Symbol(s) => Some(s.clone()),
-            TokenType::StringLitral(s) => Some(s.clone()),
-            TokenType::Whitespace => None,    // Ignore whitespace
-            TokenType::Comment(_) => None,    // Ignore comments
-            TokenType::Unknown(_) => None,    // Ignore unknown chars
+    fn format_ast_to_string(&self, ast: &syn::File) -> String {
+        let mut code = String::new();
+        for item in &ast.items {
+            let item_str = item.into_token_stream().to_string();
+            code.push_str(&item_str);
+            code.push_str("\n\n");
         }
+        code
     }
 }
