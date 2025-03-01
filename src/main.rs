@@ -20,13 +20,13 @@ FEB 8th 2025, thinking about the result formatter to make better result organiza
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
 
-mod codeAnalyzer;
-mod fileManager;
-mod semanticDetector;
+mod code_analyzer;
+mod file_manager;
+mod semantic_detector;
 
-use fileManager::FileManager;
-use codeAnalyzer::CodeAnalyzer;
-use semanticDetector::SemanticDetector;
+use file_manager::FileManager;
+use code_analyzer::CodeAnalyzer;
+use semantic_detector::SemanticDetector;
 
 fn main() -> Result<(), iced::Error> {
 
@@ -37,8 +37,8 @@ fn main() -> Result<(), iced::Error> {
 
 struct CodeSmellDetector {
     file_manager: FileManager,
-    codeAnalizer: CodeAnalyzer,
-    semanticDetector: SemanticDetector,
+    code_analizer: CodeAnalyzer,
+    semantic_detector: SemanticDetector,
     content: text_editor::Content,
     upload_button_label: String,
     analysis_button_label: String,
@@ -55,7 +55,7 @@ enum Message {
     Edit(text_editor::Action),
     UploadPressed,
     AnalysisPressed,
-    semanticPressed,
+    SemanticPressed,
     RefactorPressed,
     SavePressed,
     ClearPressed,
@@ -65,8 +65,8 @@ impl CodeSmellDetector {
     fn new() -> Self {
         Self{
             file_manager: FileManager::new(),
-            codeAnalizer: CodeAnalyzer::new(),
-            semanticDetector: SemanticDetector::new(),
+            code_analizer: CodeAnalyzer::new(),
+            semantic_detector: SemanticDetector::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
             analysis_button_label: String::from("Analysis"),
@@ -110,8 +110,8 @@ impl CodeSmellDetector {
                 self.analysis_button_label = String::from("Started Analysis");
 
                 let recent_code = self.content.text();
-                self.codeAnalizer.set_ast_content(recent_code);
-                self.analysis_results = self.codeAnalizer.get_analysis_result();
+                let _= self.code_analizer.set_ast_content(recent_code);
+                self.analysis_results = self.code_analizer.get_analysis_result();
                 // AST-> Normalizer->Analyzer for semantic duplication analysis?
                 // and how to apply the jaccard metrics? for metrics-based duplication detection?
                 // but required -> limit for semantic dup? -> over 90% -> causes dup -> duplicated when refactoring. 
@@ -119,16 +119,16 @@ impl CodeSmellDetector {
                 // Normalizer can be called in Anlayzer directly, just return result at here. 
             }
 
-            Message::semanticPressed => {
+            Message::SemanticPressed => {
                 self.analysis_results.clear();
                 let recent_code = self.content.text();
-                let _ = self.semanticDetector.detect_duplicates(&recent_code, 0.9);
-                self.analysis_results = self.semanticDetector.get_result();
+                let _ = self.semantic_detector.detect_duplicates(&recent_code, 0.9);
+                self.analysis_results = self.semantic_detector.get_result();
             }
 
             Message::RefactorPressed => {
                 self.refactor_button_label = String::from("Dup Refactored");
-                let recent_code = self.codeAnalizer.refactored_by_jaccard_result();
+                let recent_code = self.code_analizer.refactored_by_jaccard_result();
                 self.content = text_editor::Content::with_text(&recent_code);
                 println!("Refactoring: Delete Duplicate function(s)")
             }
@@ -177,7 +177,7 @@ impl CodeSmellDetector {
         .padding(10);
 
         let semantic_button = button(text(&self.semantic_button_label))
-        .on_press(Message::semanticPressed)
+        .on_press(Message::SemanticPressed)
         .padding(10);
 
         let refactor_button = button(text(&self.refactor_button_label))

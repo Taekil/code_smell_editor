@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-use pyo3::types::PyList;
 use syn::{parse_file, Item};
 use quote::quote;
 

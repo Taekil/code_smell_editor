@@ -7,7 +7,7 @@
 // analyzer.rs
 // purpose
 
-use syn::{parse_file, File, Item, ItemFn};
+use syn::{parse_file, Item, ItemFn};
 use syn::spanned::Spanned;
 use std::collections::HashSet;
 use quote::ToTokens;
