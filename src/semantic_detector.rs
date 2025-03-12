@@ -1,3 +1,8 @@
+// Taekil Oh
+// Start Date: Jan 23rd 2025
+// CSPC5260 WQ25 Version 1.0
+// semantic_detector.rs
+
 use pyo3::prelude::*;
 use syn::{parse_file, Item};
 use quote::quote;
@@ -80,7 +85,7 @@ impl SemanticDetector {
                 }
             }
 
-            result.push_str("** Similarity Comparisons **\n");
+            result.push_str("\n** Similarity Comparisons **\n\n");
             for i in 0..functions.len() {
                 for j in (i + 1)..functions.len() {
                     let similarity: f32 = compute_similarity
@@ -90,17 +95,17 @@ impl SemanticDetector {
                     
                     if similarity >= threshold {
                         result.push_str(&format!(
-                            "Potential duplicate detected (Similarity: {:.3}):\n", 
+                            "\nPotential duplicate detected (Similarity: {:.3}):\n", 
                             similarity
                         ));
                         result.push_str(&format!(
                             "Function {}: {}...\n", 
-                            i + 1, 
+                            i, 
                             functions[i].chars().take(50).collect::<String>()
                         ));
                         result.push_str(&format!(
                             "Function {}: {}...\n", 
-                            j + 1, 
+                            j, 
                             functions[j].chars().take(50).collect::<String>()
                         ));
                         result.push_str("\n");

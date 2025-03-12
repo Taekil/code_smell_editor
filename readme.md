@@ -39,11 +39,9 @@ project folder
 |
 |-- src
 |    |-- main.rs
-|    |-- codeAnalyzer.rs
-|    |-- tokenizer.rs
-|    |-- astBuilder.rs
-|    |-- fileManager.rs 
-|    |-- semanticDetector.rs 
+|    |-- code_analyzer.rs
+|    |-- file_manager.rs 
+|    |-- semantic_detector.rs 
 |
 |-- Cargo.toml
 |-- README.md

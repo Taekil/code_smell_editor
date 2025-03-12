@@ -1,11 +1,7 @@
 // Taekil Oh
 // Start Date: Jan 23rd 2025
-// Update Date:
-// 1st due Date:
-// final due date:  
-// CSPC5260 WQ25 Version 0.0
+// CSPC5260 WQ25 Version 1.0
 // analyzer.rs
-// purpose
 
 use syn::{parse_file, Item, ItemFn};
 use syn::spanned::Spanned;
@@ -21,6 +17,7 @@ pub struct FunctionInfo {
 
 pub struct CodeAnalyzer {
     ast_content: Option<syn::File>,
+    source_code: Option<String>,
     analysis_result: String,
 }
 
@@ -28,24 +25,28 @@ impl CodeAnalyzer {
     pub fn new() -> Self {
         CodeAnalyzer {
             ast_content: None,
+            source_code: None,
             analysis_result: String::from(""),
         }
     }
 
     pub fn set_ast_content(&mut self, source: String) -> Result<(), syn::Error>{
         self.ast_content = Some(parse_file(&source)?);
+        self.source_code = Some(source);
         Ok(())
     }
 
     pub fn get_analysis_result(&mut self) -> String {
         self.analysis_result.clear();
-        self.analysis_result.push_str("** LOC **\n");
+        self.analysis_result.push_str("\n** LOC **\n");
         self.get_line_of_code();
-        self.analysis_result.push_str("** Long Method Name **\n");
+        self.analysis_result.push_str("\n** Long Method over 15 lines **\n");
+        self.find_long_method();
+        self.analysis_result.push_str("\n** Long Method Name **\n");
         self.find_long_method_name();
-        self.analysis_result.push_str("** Long Parameter List **\n");
+        self.analysis_result.push_str("\n** Long Parameter List over 3 parameters**\n");
         self.find_long_parameter_list();
-        self.analysis_result.push_str("** Jaccard Metrics **\n");
+        self.analysis_result.push_str("\n** Jaccard Metrics **\n");
         self.find_duplicated_by_jaccard();
 
         self.analysis_result.clone()
@@ -56,7 +57,7 @@ impl CodeAnalyzer {
             let functions = self.collect_functions(ast);
             let mut unique_functions: Vec<ItemFn> = Vec::new();
             let mut seen: HashSet<String> = HashSet::new();
-            let threshold = 0.9;
+            let threshold = 0.75;
 
             for i in 0..functions.len() {
                 let mut is_duplicate = false;
@@ -76,7 +77,7 @@ impl CodeAnalyzer {
 
             let mut new_ast = ast.clone();
             new_ast.items = unique_functions.into_iter().map(Item::Fn).collect();
-
+            
             self.format_ast_to_string(&new_ast)
         } else {
             "// No AST content available for refactoring".to_string()
@@ -95,11 +96,9 @@ impl CodeAnalyzer {
             for item in &ast.items {
                 let span = match item {
                     Item::Fn(func) => {
-                        // Use the block's span
                         func.block.span()
                     }
                     _ => {
-                        // Or the entire item's span if not a function
                         item.span()
                     }
                 };
@@ -125,6 +124,38 @@ impl CodeAnalyzer {
                 .push_str(&format!(" - LOC of updated Code is {}\n", loc));
         } else {
             self.analysis_result.push_str(" - No AST content available\n");
+        }
+    }
+
+    fn find_long_method(&mut self) {
+        const THRESHOLD: usize = 15;
+        if let (Some(ast), Some(source)) = (&self.ast_content, &self.source_code) {
+            let source_lines: Vec<&str> = source.lines().collect();
+
+            for item in &ast.items {
+                if let Item::Fn(func) = item {
+                    let name = func.sig.ident.to_string();
+                    let span = func.block.span();
+                    let start_line = span.start().line;
+                    let end_line = span.end().line;
+
+                    let function_lines = &source_lines[start_line - 1..end_line];
+                    let non_blank_lines = function_lines
+                        .iter()
+                        .filter(|line| !line.trim().is_empty())
+                        .count();
+
+                    if non_blank_lines > THRESHOLD {
+                        self.analysis_result.push_str(&format!(
+                            " - Function '{}' is a long method with {} non-blank lines of code\n",
+                            name, non_blank_lines
+                        ));
+                    }
+                }
+            }
+        } else {
+            self.analysis_result
+                .push_str(" - No AST or source code available for long method analysis\n");
         }
     }
 
@@ -171,7 +202,7 @@ impl CodeAnalyzer {
                 return;
             }
 
-            let threshold = 0.9;
+            let threshold = 0.75;
             for i in 0..functions.len() {
                 for j in i + 1..functions.len() {
                     let fn1 = &functions[i];

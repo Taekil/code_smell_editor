@@ -1,30 +1,43 @@
-// Semantic Duplicate Example 1: Different Algorithms, Same Result
-// Function 1: Using a loop
+// testCode2.rs
+// SUM (Semantic Duplicates)
+// Function 0: Loop-based summation
 fn sum_of_numbers_loop(n: u32) -> u32 {
-    let mut sum = 0;
-    for i in 1..=n {
-        sum += i;
+    let mut accum = 0;
+    for counter in 1..=n {
+        accum += counter;
     }
-    sum
+    accum
 }
 
-// Function 2: Using a mathematical formula (more efficient)
+// Function 1: Mathematical formula
 fn sum_of_numbers_formula(n: u32) -> u32 {
+    // Using a closed-form expression
     (n * (n + 1)) / 2
 }
 
-// Semantic Duplicate Example 2: Different Data Structures, Same Operation
-// Function 1: Operating on a Vec
-fn find_element_vec(data: &Vec<i32>, target: i32) -> bool {
-    for &item in data {
-        if item == target {
+// Function 2: Using fold for accumulation
+fn compute_sum_fold(n: u32) -> u32 {
+    (1..=n).fold(0, |acc, x| acc + x)
+}
+
+// FIND (Semantic Duplicates)
+
+// Function 3: Operating on a Vec
+fn find_element_vec(collection: &Vec<i32>, goal: i32) -> bool {
+    for &elem in collection {
+        if elem == goal {
             return true;
         }
     }
     false
 }
 
-// Function 2: Operating on a HashSet
-fn find_element_hashset(data: &std::collections::HashSet<i32>, target: i32) -> bool {
-    data.contains(&target)
+// Function 4: Using a HashSet
+fn find_element_hashset(collection: &std::collections::HashSet<i32>, goal: i32) -> bool {
+    collection.contains(&goal)
+}
+
+// Function 5: Search in a slice
+fn search_in_slice(slice: &[i32], search_value: i32) -> bool {
+    slice.iter().any(|&x| x == search_value)
 }

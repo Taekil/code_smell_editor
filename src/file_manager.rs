@@ -1,3 +1,6 @@
+// Taekil Oh
+// Start Date: Jan 23rd 2025
+// CSPC5260 WQ25 Version 1.0
 // fileNamager.rs
 
 use rfd::FileDialog;

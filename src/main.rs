@@ -1,21 +1,7 @@
 // Taekil Oh
 // Start Date: Jan 23rd 2025
-// Update Date:
-// 1st due Date:
-// final due date:  
-// CSPC5260 WQ25 Version 0.0
+// CSPC5260 WQ25 Version 1.0
 // main.rs
-// Code Smell Detector, the purpose of main.rs 
-/*
- 1. main.rs (Entry Point)
-Calls fileManager.rs to read the source code.
-Calls tokenizer.rs to tokenize the code.
-Calls astBuilder.rs to build the AST.
-
-Displays results.
-
-FEB 8th 2025, thinking about the result formatter to make better result organization. 
- */
 
 use iced::widget::{button, column, container, row, scrollable, text, text_editor};
 use iced::{application, Element};
@@ -46,8 +32,7 @@ struct CodeSmellDetector {
     refactor_button_label:String,
     save_button_label: String,
     clear_button_label: String,
-    analysis_results: String, //Store results here
-    // analyzer should be called here first?
+    analysis_results: String,
 }
 
 #[derive(Debug, Clone)]
@@ -69,18 +54,18 @@ impl CodeSmellDetector {
             semantic_detector: SemanticDetector::new(),
             content: text_editor::Content::default(),
             upload_button_label: String::from("Upload Code"),
-            analysis_button_label: String::from("Analysis"),
+            analysis_button_label: String::from("Jaccard Analysis"),
             semantic_button_label: String::from("Semantic Analysis"),
-            refactor_button_label: String::from("Dup Refactor"),
+            refactor_button_label: String::from("Refactoring"),
             save_button_label: String::from("Save"),
             clear_button_label: String::from("Clear"),
             
-            analysis_results: String::from(""), // empty Initially
+            analysis_results: String::from(""),
         }
     }
 
     fn title(&self) -> String {
-        String::from("Code Smell Detector")
+        String::from("CODE SMELL DETECTOR")
     }
 
     fn update(&mut self, message: Message) {
@@ -93,7 +78,7 @@ impl CodeSmellDetector {
                 match self.file_manager.upload_file() {
                         Ok(content) => {
                             self.content = text_editor::Content::with_text(&content);
-                            self.upload_button_label = String::from("uploaded");
+                            // self.upload_button_label = String::from("uploaded");
 
                             // self.tokenizer.set_input(content.clone());
                             println!("Tokenized Done in UploadPressed")
@@ -107,27 +92,24 @@ impl CodeSmellDetector {
 
             Message::AnalysisPressed => {
 
-                self.analysis_button_label = String::from("Started Analysis");
-
+                // self.analysis_button_label = String::from("Started Analysis");
                 let recent_code = self.content.text();
                 let _= self.code_analizer.set_ast_content(recent_code);
                 self.analysis_results = self.code_analizer.get_analysis_result();
-                // AST-> Normalizer->Analyzer for semantic duplication analysis?
-                // and how to apply the jaccard metrics? for metrics-based duplication detection?
-                // but required -> limit for semantic dup? -> over 90% -> causes dup -> duplicated when refactoring. 
-                // after normailzer -> Drawer to compare primary passed and updated by normalizer?
-                // Normalizer can be called in Anlayzer directly, just return result at here. 
             }
 
             Message::SemanticPressed => {
+
                 self.analysis_results.clear();
+                let threshold = 0.7;
                 let recent_code = self.content.text();
-                let _ = self.semantic_detector.detect_duplicates(&recent_code, 0.9);
+                let _ = self.semantic_detector.detect_duplicates(&recent_code, threshold);
                 self.analysis_results = self.semantic_detector.get_result();
             }
 
             Message::RefactorPressed => {
-                self.refactor_button_label = String::from("Dup Refactored");
+
+                // self.refactor_button_label = String::from("Dup Refactored");
                 let recent_code = self.code_analizer.refactored_by_jaccard_result();
                 self.content = text_editor::Content::with_text(&recent_code);
                 println!("Refactoring: Delete Duplicate function(s)")
@@ -146,12 +128,12 @@ impl CodeSmellDetector {
             }
 
             Message::ClearPressed => {
-                // Reset all fields
+
                 self.content = text_editor::Content::default();
-                self.upload_button_label = String::from("Upload Code");
-                self.analysis_button_label = String::from("Analysis");
-                self.refactor_button_label = String::from("Dup Refactor");
-                self.save_button_label = String::from("Save");
+                // self.upload_button_label = String::from("Upload Code");
+                // self.analysis_button_label = String::from("Analysis");
+                // self.refactor_button_label = String::from("Dup Refactor");
+                // self.save_button_label = String::from("Save");
                 self.analysis_results = String::from("");
             }
         }
