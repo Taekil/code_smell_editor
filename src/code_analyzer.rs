@@ -8,6 +8,10 @@ use syn::spanned::Spanned;
 use std::collections::HashSet;
 use quote::ToTokens;
 
+use std::process::{Command, Stdio};
+use std::io::Write;
+use syn::File;
+
 #[derive(Clone)] 
 pub struct FunctionInfo {
     pub name: String,
@@ -277,10 +281,37 @@ impl CodeAnalyzer {
     fn format_ast_to_string(&self, ast: &syn::File) -> String {
         let mut code = String::new();
         for item in &ast.items {
+            // Insert a blank line before functions for readability
+            if let syn::Item::Fn(_) = item {
+                code.push_str("\n");
+            }
             let item_str = item.into_token_stream().to_string();
             code.push_str(&item_str);
             code.push_str("\n\n");
         }
-        code
+        match self.format_with_rustfmt(&code) {
+            Some(formatted) => formatted,
+            None => code,
+        }
+    }
+    
+    fn format_with_rustfmt(&self, code: &str) -> Option<String> {
+        let mut rustfmt = Command::new("rustfmt")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .ok()?;
+
+        {
+            let stdin = rustfmt.stdin.as_mut()?;
+            stdin.write_all(code.as_bytes()).ok()?;
+        }
+
+        let output = rustfmt.wait_with_output().ok()?;
+        if output.status.success() {
+            Some(String::from_utf8_lossy(&output.stdout).to_string())
+        } else {
+            None
+        }
     }
 }
