@@ -37,6 +37,10 @@ The dependencies used in this project are listed in **`Cargo.toml`**:
 ```
 project folder
 |
+|-- dl_training_file
+|    |--dl_traiing_model.py
+|    |- - rust_semantic_duplicate_data.csv
+|
 |-- src
 |    |-- main.rs
 |    |-- code_analyzer.rs
@@ -90,6 +94,7 @@ project folder
     - **semantic_detect_training_model.py**: the script to train ML model 
     - **semantic_duplicate_detector.pth**: pre-trained weights
     - **token_to_index.pkl**: pre-trained vocabulary
+    - **dl_traiing_file**: dl_training_model.py and rust_semantic_duplicate_data.csv to build the DL-NN for train and save
 
 ---
 

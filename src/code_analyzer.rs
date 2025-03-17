@@ -10,7 +10,6 @@ use quote::ToTokens;
 
 use std::process::{Command, Stdio};
 use std::io::Write;
-use syn::File;
 
 #[derive(Clone)] 
 pub struct FunctionInfo {
@@ -42,14 +41,19 @@ impl CodeAnalyzer {
 
     pub fn get_analysis_result(&mut self) -> String {
         self.analysis_result.clear();
+        
         self.analysis_result.push_str("\n** LOC **\n");
         self.get_line_of_code();
+        
         self.analysis_result.push_str("\n** Long Method over 15 lines **\n");
         self.find_long_method();
+        
         self.analysis_result.push_str("\n** Long Method Name **\n");
         self.find_long_method_name();
+        
         self.analysis_result.push_str("\n** Long Parameter List over 3 parameters**\n");
         self.find_long_parameter_list();
+        
         self.analysis_result.push_str("\n** Jaccard Metrics **\n");
         self.find_duplicated_by_jaccard();
 

@@ -26,7 +26,6 @@ impl SemanticDetector {
         let mut result = String::new();
         result.push_str(&format!("** Starting analysis with character count: {} **\n", code.len()));
          
-        // Check function extraction
         let functions = self.extract_functions(code);
         result.push_str(&format!("Found {} functions\n", functions.len()));
         
@@ -36,17 +35,8 @@ impl SemanticDetector {
             return Ok(());
         }
 
-        // for (i, func) in functions.iter().enumerate() {
-        //     result.push_str(&format!(
-        //         "Function {}: {}...\n", 
-        //         i, 
-        //         func.chars().take(50).collect::<String>()
-        //     ));
-        // }
-
         Python::with_gil(|py| -> PyResult<()> {
-            result.push_str("Python GIL acquired\n");
-
+            
             // Add project root to Python's sys.path
             let sys = py.import_bound("sys")?;
             let path = sys.getattr("path")?;
@@ -68,7 +58,6 @@ impl SemanticDetector {
             let get_embedding = inference.getattr("get_embedding")?;
             let compute_similarity = inference.getattr("compute_similarity")?;
 
-            // Generate embeddings
             for (i, func) in functions.iter().enumerate() {
                 match get_embedding.call1((func,)) {
                     Ok(result_embedding) => {
