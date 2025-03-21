@@ -1,4 +1,4 @@
-# **Code Smell Detector**  
+# **Code Smell Editor**  
 
 ## **Purpose of this README.md**  
 This `README.md` provides essential information about the **Code Smell Detector** project, including:  
