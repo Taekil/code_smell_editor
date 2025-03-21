@@ -69,14 +69,6 @@ project folder
 - Reads `.rs` source files from a directory  
 - Provides an interface to retrieve code content as a string  
 
-#### **3. `tokenizer.rs` (Lexical Analysis)**  
-- Breaks the code into tokens  
-- Helps identify long function names  
-- Extracts function signatures for further analysis  
-
-#### **4. `astBuilder.rs` (AST Generation & Structural Analysis)**  
-- Builds the **Abstract Syntax Tree (AST)** for analyzing code structure
-
 #### **5. `codeAnalyzer.rs` (Main Code Smell Detector)**  
 - Receives **AST & Tokens**
 - performs **code smell analysis**:  
