@@ -38,8 +38,8 @@ The dependencies used in this project are listed in **`Cargo.toml`**:
 project folder
 |
 |-- dl_training_file
-|    |--dl_traiing_model.py
-|    |- - rust_semantic_duplicate_data.csv
+|    |-- dl_traiing_model.py
+|    |-- rust_semantic_duplicate_data.csv
 |
 |-- src
 |    |-- main.rs
